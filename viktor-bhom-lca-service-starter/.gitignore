@@ -22,6 +22,9 @@ gateway/runtime/
 # Generated source locks and validation caches
 external-revisions.json
 .schema-cache/
+AGENT_IMPLEMENTATION_GUIDE.md
+VALIDATION.md
+*.sha256
 
 # Worker output
 analysis-result.json

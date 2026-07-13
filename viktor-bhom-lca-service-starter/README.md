@@ -246,9 +246,7 @@ The first profile supports `ClimateChangeTotal` and nonoverlapping module select
 
 ## Project documents
 
-- [Implementation agent guide](AGENT_IMPLEMENTATION_GUIDE.md)
 - [Statement of Work](SOW.md)
-- [Validation record](VALIDATION.md)
 - [Operations](docs/OPERATIONS.md)
 - [Calling from another VIKTOR app](docs/VIKTOR_APP_INTEGRATION.md)
 - [BHoM contract notes](docs/BHOM_CONTRACTS.md)
