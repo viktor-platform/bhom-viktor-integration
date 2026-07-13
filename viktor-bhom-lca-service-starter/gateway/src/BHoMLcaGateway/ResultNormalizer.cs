@@ -1,5 +1,5 @@
 using System.Globalization;
-using System.Reflection;
+using BH.oM.LifeCycleAssessment;
 using BH.oM.LifeCycleAssessment.Results;
 using BH.oM.Physical.Materials;
 
@@ -17,42 +17,56 @@ public static class ResultNormalizer
     {
         List<ResultRecord> records = [];
 
+        // Parse the selected module strings into BHoM Module enum values once.
+        List<Module> parsedModules = [];
+        foreach (string moduleStr in selectedModules)
+        {
+            if (Enum.TryParse<Module>(moduleStr, out Module parsedModule))
+            {
+                parsedModules.Add(parsedModule);
+            }
+            else
+            {
+                eventLog.Warning(
+                    "result.module_unknown",
+                    $"Module string '{moduleStr}' could not be parsed as a BHoM Module enum value."
+                );
+            }
+        }
+
         foreach (MaterialResult materialResult in materialResults)
         {
             Type resultType = materialResult.GetType();
             string metric = MetricName(resultType);
-            string materialName =
-                StringProperty(materialResult, "MaterialName") ?? "Unspecified";
-            string epdName =
-                StringProperty(
-                    materialResult,
-                    "EnvironmentalProductDeclarationName"
-                ) ?? "Unspecified";
+            string materialName = materialResult.MaterialName ?? "Unspecified";
+            string epdName = materialResult.EnvironmentalProductDeclarationName ?? "Unspecified";
 
-            foreach (string module in selectedModules)
+            // BHoM v9: results are in Indicators dictionary keyed by Module enum.
+            if (materialResult.Indicators is not { } indicators)
             {
-                PropertyInfo? moduleProperty = resultType.GetProperty(
-                    module,
-                    BindingFlags.Instance | BindingFlags.Public
+                eventLog.Warning(
+                    "result.no_indicators",
+                    $"Material result for '{materialName}' has no Indicators dictionary."
                 );
+                continue;
+            }
 
-                if (moduleProperty is null)
+            foreach (Module module in parsedModules)
+            {
+                if (!indicators.TryGetValue(module, out double value))
                 {
                     eventLog.Warning(
                         "result.module_missing",
-                        $"Result type '{resultType.FullName}' has no public "
-                        + $"property named '{module}'."
+                        $"Result for '{materialName}' has no entry for module '{module}'."
                     );
                     continue;
                 }
 
-                object? rawValue = moduleProperty.GetValue(materialResult);
-                if (!TryToDouble(rawValue, out double value))
+                if (double.IsNaN(value) || double.IsInfinity(value))
                 {
                     eventLog.Warning(
                         "result.module_not_numeric",
-                        $"Property '{resultType.FullName}.{module}' did not "
-                        + "contain a finite numeric value."
+                        $"Module '{module}' for '{materialName}' is not a finite value."
                     );
                     continue;
                 }
@@ -63,7 +77,7 @@ public static class ResultNormalizer
                         Material = materialName,
                         EnvironmentalProductDeclaration = epdName,
                         Metric = metric,
-                        Module = module,
+                        Module = module.ToString(),
                         Value = value,
                         Unit = UnitForMetric(metric),
                     }
@@ -134,45 +148,6 @@ public static class ResultNormalizer
         return resultType.Name.EndsWith(suffix, StringComparison.Ordinal)
             ? resultType.Name[..^suffix.Length]
             : resultType.Name;
-    }
-
-    private static string? StringProperty(object value, string propertyName)
-    {
-        object? propertyValue = value
-            .GetType()
-            .GetProperty(
-                propertyName,
-                BindingFlags.Instance | BindingFlags.Public
-            )
-            ?.GetValue(value);
-        return propertyValue as string;
-    }
-
-    private static bool TryToDouble(object? rawValue, out double value)
-    {
-        value = 0;
-        if (rawValue is null)
-        {
-            return false;
-        }
-
-        try
-        {
-            value = System.Convert.ToDouble(
-                rawValue,
-                CultureInfo.InvariantCulture
-            );
-            return !double.IsNaN(value) && !double.IsInfinity(value);
-        }
-        catch (Exception error)
-            when (
-                error is FormatException
-                or InvalidCastException
-                or OverflowException
-            )
-        {
-            return false;
-        }
     }
 
     private static string UnitForMetric(string metric)

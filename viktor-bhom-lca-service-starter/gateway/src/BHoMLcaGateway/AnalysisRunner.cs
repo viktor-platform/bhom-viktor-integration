@@ -25,7 +25,7 @@ public static class AnalysisRunner
             request.Modules
         );
 
-        string takeoffJson = JsonIO.ReadText(request.TakeoffFilename);
+        string takeoffJson = JsonIO.ReadText(request.TakeoffFilename).Trim();
         object? takeoffObject = BHoMSerialiser.FromJson(takeoffJson);
         GeneralMaterialTakeoff takeoff =
             takeoffObject as GeneralMaterialTakeoff
@@ -36,7 +36,7 @@ public static class AnalysisRunner
 
         string templateJson = JsonIO.ReadText(
             request.TemplateMaterialsFilename
-        );
+        ).Trim();
         IEnumerable<object>? deserializedTemplateObjects =
             BHoMSerialiser.FromJsonArray(templateJson);
         List<object> templateObjects =

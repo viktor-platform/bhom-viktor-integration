@@ -24,6 +24,7 @@ if (-not (Test-Path $BHoMAssembliesDirectory)) {
 $RequiredAssemblies = @(
     "BHoM.dll",
     "BHoM_Engine.dll",
+    "Dimensional_oM.dll",
     "LifeCycleAssessment_Engine.dll",
     "LifeCycleAssessment_oM.dll",
     "Matter_Engine.dll",

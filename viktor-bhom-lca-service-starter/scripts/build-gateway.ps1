@@ -34,6 +34,7 @@ if (-not (Test-Path $InstalledBHoMAssemblies)) {
 $RequiredInstalledAssemblies = @(
     "BHoM.dll",
     "BHoM_Engine.dll",
+    "Dimensional_oM.dll",
     "LifeCycleAssessment_oM.dll",
     "Physical_oM.dll",
     "Serialiser_Engine.dll"
@@ -109,6 +110,28 @@ $Gateway = Join-Path $PublishDirectory "BHoMLcaGateway.exe"
 if (-not (Test-Path $Gateway)) {
     throw "The gateway executable was not created at $Gateway."
 }
+
+# BHoM loads System.Drawing.Common which requires the Windows Desktop runtime.
+# dotnet publish emits a single-framework runtimeconfig; patch it to declare both frameworks.
+$RuntimeConfig = Join-Path $PublishDirectory "BHoMLcaGateway.runtimeconfig.json"
+@'
+{
+  "runtimeOptions": {
+    "tfm": "net8.0",
+    "frameworks": [
+      { "name": "Microsoft.WindowsDesktop.App", "version": "8.0.0" },
+      { "name": "Microsoft.NETCore.App",         "version": "8.0.0" }
+    ],
+    "configProperties": {
+      "System.Globalization.Invariant": false,
+      "System.Reflection.Metadata.MetadataUpdater.IsSupported": false,
+      "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": false,
+      "CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS": false
+    }
+  }
+}
+'@ | Set-Content $RuntimeConfig -Encoding UTF8
+Write-Host "Patched runtimeconfig.json (WindowsDesktop + NETCore frameworks)"
 
 $DiagnosticDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("bhom-lca-diagnose-" + [Guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Force -Path $DiagnosticDirectory | Out-Null

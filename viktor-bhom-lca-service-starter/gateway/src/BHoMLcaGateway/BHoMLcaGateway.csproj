@@ -39,6 +39,10 @@
       <HintPath>$(BHoMAssembliesDir)\Serialiser_Engine.dll</HintPath>
       <Private>true</Private>
     </Reference>
+    <Reference Include="Dimensional_oM">
+      <HintPath>$(BHoMAssembliesDir)\Dimensional_oM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
   <Target Name="ValidateBHoMReferences" BeforeTargets="ResolveReferences">
@@ -47,5 +51,6 @@
     <Error Condition="!Exists('$(BHoMAssembliesDir)\LifeCycleAssessment_oM.dll')" Text="Missing LifeCycleAssessment_oM.dll in $(BHoMAssembliesDir)." />
     <Error Condition="!Exists('$(BHoMAssembliesDir)\Physical_oM.dll')" Text="Missing Physical_oM.dll in $(BHoMAssembliesDir)." />
     <Error Condition="!Exists('$(BHoMAssembliesDir)\Serialiser_Engine.dll')" Text="Missing Serialiser_Engine.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Dimensional_oM.dll')" Text="Missing Dimensional_oM.dll in $(BHoMAssembliesDir)." />
   </Target>
 </Project>
