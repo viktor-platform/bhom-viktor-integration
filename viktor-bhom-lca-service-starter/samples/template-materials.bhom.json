@@ -1,0 +1,46 @@
+[
+  {
+    "_t": "BH.oM.Physical.Materials.Material",
+    "Name": "Concrete C30/37",
+    "Density": 2400.0,
+    "Properties": [
+      {
+        "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.EnvironmentalProductDeclaration",
+        "Name": "Sample concrete EPD",
+        "Type": "Sector",
+        "QuantityType": "Mass",
+        "EnvironmentalMetrics": [
+          {
+            "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalMetric",
+            "A1": 0.05,
+            "A2": 0.01,
+            "A3": 0.06,
+            "A1toA3": 0.12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "_t": "BH.oM.Physical.Materials.Material",
+    "Name": "Structural Steel",
+    "Density": 7850.0,
+    "Properties": [
+      {
+        "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.EnvironmentalProductDeclaration",
+        "Name": "Sample steel EPD",
+        "Type": "Sector",
+        "QuantityType": "Mass",
+        "EnvironmentalMetrics": [
+          {
+            "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalMetric",
+            "A1": 0.9,
+            "A2": 0.1,
+            "A3": 0.75,
+            "A1toA3": 1.75
+          }
+        ]
+      }
+    ]
+  }
+]

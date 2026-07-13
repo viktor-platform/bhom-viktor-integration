@@ -1,0 +1,12 @@
+{
+  "schema_repository": "https://github.com/BHoM/BHoM_JSONSchema",
+  "branch": "develop",
+  "schemas": {
+    "takeoff": "Physical_oM/Materials/GeneralMaterialTakeoff.json",
+    "material": "Physical_oM/Materials/Material.json",
+    "takeoff_item": "Physical_oM/Materials/TakeoffItem.json",
+    "environmental_product_declaration": "LifeCycleAssessment_oM/MaterialFragments/EnvironmentalProductDeclaration.json",
+    "climate_change_total_metric": "LifeCycleAssessment_oM/MaterialFragments/ClimateChangeTotalMetric.json",
+    "climate_change_total_result": "LifeCycleAssessment_oM/Results/ClimateChangeTotalMaterialResult.json"
+  }
+}

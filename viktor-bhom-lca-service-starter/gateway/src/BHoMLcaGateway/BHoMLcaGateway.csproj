@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <AssemblyName>BHoMLcaGateway</AssemblyName>
+    <RootNamespace>BHoMLcaGateway</RootNamespace>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PublishSingleFile>false</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <BHoMAssembliesDir Condition="'$(BHoMAssembliesDir)' == ''">$(ProgramData)\BHoM\Assemblies</BHoMAssembliesDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BHoM">
+      <HintPath>$(BHoMAssembliesDir)\BHoM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="LifeCycleAssessment_Engine">
+      <HintPath>$(BHoMAssembliesDir)\LifeCycleAssessment_Engine.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="LifeCycleAssessment_oM">
+      <HintPath>$(BHoMAssembliesDir)\LifeCycleAssessment_oM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Physical_oM">
+      <HintPath>$(BHoMAssembliesDir)\Physical_oM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Serialiser_Engine">
+      <HintPath>$(BHoMAssembliesDir)\Serialiser_Engine.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateBHoMReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\BHoM.dll')" Text="Missing BHoM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\LifeCycleAssessment_Engine.dll')" Text="Missing LifeCycleAssessment_Engine.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\LifeCycleAssessment_oM.dll')" Text="Missing LifeCycleAssessment_oM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Physical_oM.dll')" Text="Missing Physical_oM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Serialiser_Engine.dll')" Text="Missing Serialiser_Engine.dll in $(BHoMAssembliesDir)." />
+  </Target>
+</Project>

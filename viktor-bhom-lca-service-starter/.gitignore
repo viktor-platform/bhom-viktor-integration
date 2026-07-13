@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.coverage
+htmlcov/
+
+# VIKTOR
+.viktor/
+.viktor-cache/
+
+# .NET
+gateway/**/bin/
+gateway/**/obj/
+gateway/publish/
+gateway/runtime/
+*.user
+*.suo
+
+# Generated source locks and validation caches
+external-revisions.json
+.schema-cache/
+
+# Worker output
+analysis-result.json
+bhom-results.json
+analysis-events.json
+runtime-manifest.json
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

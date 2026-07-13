@@ -1,0 +1,42 @@
+{
+  "_t": "BH.oM.Physical.Materials.GeneralMaterialTakeoff",
+  "Name": "Sample project takeoff",
+  "MaterialTakeoffItems": [
+    {
+      "_t": "BH.oM.Physical.Materials.TakeoffItem",
+      "Material": {
+        "_t": "BH.oM.Physical.Materials.Material",
+        "Name": "Concrete C30/37",
+        "Density": 2400.0,
+        "Properties": []
+      },
+      "Volume": 10.0,
+      "Mass": 24000.0,
+      "Area": 0.0,
+      "Length": 0.0,
+      "NumberItem": 1,
+      "ElectricCurrent": 0.0,
+      "Energy": 0.0,
+      "Power": 0.0,
+      "VolumetricFlowRate": 0.0
+    },
+    {
+      "_t": "BH.oM.Physical.Materials.TakeoffItem",
+      "Material": {
+        "_t": "BH.oM.Physical.Materials.Material",
+        "Name": "Structural Steel",
+        "Density": 7850.0,
+        "Properties": []
+      },
+      "Volume": 1.2,
+      "Mass": 9420.0,
+      "Area": 0.0,
+      "Length": 0.0,
+      "NumberItem": 1,
+      "ElectricCurrent": 0.0,
+      "Energy": 0.0,
+      "Power": 0.0,
+      "VolumetricFlowRate": 0.0
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+executables:
+  bhom_lca:
+    path: 'C:\Services\BHoMLcaGateway\BHoMLcaGateway.exe'
+    arguments:
+      - 'run'
+      - '--request'
+      - 'analysis-request.json'
+      - '--output'
+      - 'analysis-result.json'
+      - '--raw-output'
+      - 'bhom-results.json'
+      - '--events'
+      - 'analysis-events.json'
+      - '--runtime-manifest'
+      - 'runtime-manifest.json'
+
+maxParallelProcesses: 2
