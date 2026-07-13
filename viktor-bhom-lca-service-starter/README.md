@@ -1,8 +1,14 @@
-# BHoM LCA Gateway — Install Guide
+# VIKTOR - BHoM - LCA Analysis
 
-**Tested with: BHoM v9 (assemblies 9.0.0.0), .NET 8 SDK, Windows 10/11**
+![Thumbnail](assets/thumbnail.png)
 
-## Prerequisites
+Life-cycle assessment (LCA) carbon analysis powered by BHoM and VIKTOR.
+
+---
+
+## Setup
+
+### Prerequisites
 
 | Tool | Where |
 |------|-------|
@@ -11,24 +17,108 @@
 | Git | https://git-scm.com |
 | PowerShell 5.1+ | built-in on Windows 10/11 |
 
-## First-time setup
+### 1. Clone and Build the Gateway
 
 ```powershell
-# 1. Clone this repo and enter it
+# Clone this repo
 git clone <repo-url> C:\dev\bhom-lca\viktor-bhom-lca-service
 cd C:\dev\bhom-lca\viktor-bhom-lca-service
 
-# 2. Clone BHoM source (LCA Engine + JSON schemas)
+# Clone BHoM source (LCA Engine + JSON schemas)
 powershell -ExecutionPolicy Bypass -File scripts\clone-bhom-repositories.ps1 -RootDirectory C:\dev\bhom-lca
 
-# 3. Build and publish the gateway
+# Build and publish the gateway
 powershell -ExecutionPolicy Bypass -File scripts\build-gateway.ps1 -RootDirectory C:\dev\bhom-lca
-
-# 4. Verify — should print total_kgco2e = 19365
-powershell -ExecutionPolicy Bypass -File worker\run-local.ps1
 ```
 
-## If using a different BHoM version
+---
+
+## VIKTOR Generic Worker
+
+### 2. Install the Gateway
+
+The gateway must be installed to `C:\Services\BHoMLcaGateway` for the VIKTOR worker to access it.
+
+```powershell
+# Run as Administrator
+powershell -ExecutionPolicy Bypass -File worker\install-gateway.ps1
+```
+
+### 3. Configure the Generic Worker
+
+Edit the Generic Worker config (default location):
+
+```
+%LOCALAPPDATA%\Viktor\VIKTOR - generic (v6.1.0)\config.yaml
+```
+
+Replace the content with:
+
+```yaml
+executables:
+  bhom_lca:
+    path: 'C:\Services\BHoMLcaGateway\BHoMLcaGateway.exe'
+    arguments:
+      - 'run'
+      - '--request'
+      - 'analysis-request.json'
+      - '--output'
+      - 'analysis-result.json'
+      - '--raw-output'
+      - 'bhom-results.json'
+      - '--events'
+      - 'analysis-events.json'
+      - '--runtime-manifest'
+      - 'runtime-manifest.json'
+    workingDirectoryPath: ''
+
+maxParallelProcesses: 2
+```
+
+### 4. Verify the Worker
+
+```powershell
+powershell -ExecutionPolicy Bypass -File worker\run-local.ps1
+# Expected output: total_kgco2e = 19365
+```
+
+---
+
+## VIKTOR App
+
+### 5. Create and Start the App
+
+```powershell
+# Create the VIKTOR app (first time only)
+viktor-cli create-app "BHoM LCA Carbon Analysis" --registered-name bhom-lca-carbon-analysis
+
+# Install dependencies and start development
+viktor-cli clean-start
+```
+
+### 6. Using the App
+
+1. **Upload files**:
+   - `samples/takeoff.bhom.json` → BHoM material takeoff
+   - `samples/template-materials.bhom.json` → EPD template materials
+
+2. **Configure analysis**:
+   - Set project info (ID, name, gross floor area)
+   - Select life-cycle modules (A1, A2, A3)
+
+3. **Run**:
+   - Click **"Run and download normalized JSON"**
+
+4. **View results**:
+   - **Summary** → Total emissions (kgCO2e, tCO2e, carbon intensity)
+   - **Analysis chart** → Visualization by material/EPD/module
+   - **Detailed records** → Table breakdown
+
+---
+
+## Troubleshooting
+
+### Different BHoM Version
 
 | What changed | What to update |
 |---|---|
