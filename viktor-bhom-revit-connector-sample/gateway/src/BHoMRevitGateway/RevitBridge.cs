@@ -207,7 +207,7 @@ public static class RevitBridge
             string stem = Path.GetFileNameWithoutExtension(expected);
             if (
                 string.IsNullOrWhiteSpace(title)
-                || !title.Contains(stem, StringComparison.OrdinalIgnoreCase)
+                || title.IndexOf(stem, StringComparison.OrdinalIgnoreCase) < 0
             )
             {
                 throw new InvalidOperationException(

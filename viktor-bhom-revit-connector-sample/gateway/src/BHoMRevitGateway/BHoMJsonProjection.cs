@@ -304,12 +304,26 @@ public static class BHoMJsonProjection
             && boolean;
     }
 
-    private sealed record MaterialLink(
-        JsonObject Material,
-        string Name,
-        double Volume,
-        double Mass
-    );
+    private sealed class MaterialLink
+    {
+        public MaterialLink(
+            JsonObject material,
+            string name,
+            double volume,
+            double mass
+        )
+        {
+            Material = material;
+            Name = name;
+            Volume = volume;
+            Mass = mass;
+        }
+
+        public JsonObject Material { get; }
+        public string Name { get; }
+        public double Volume { get; }
+        public double Mass { get; }
+    }
 
     private sealed class MaterialAggregate(JsonObject material)
     {

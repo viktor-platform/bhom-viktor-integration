@@ -2,13 +2,13 @@ namespace BHoMRevitGateway;
 
 public sealed class CommandLineOptions
 {
-    public string Command { get; init; } = string.Empty;
-    public string RequestPath { get; init; } = "revit-pull-request.json";
-    public string MetadataPath { get; init; } = "revit-metadata.json";
-    public string ElementsPath { get; init; } = "revit-elements.bhom.json";
-    public string TakeoffPath { get; init; } = "takeoff.bhom.json";
-    public string EventsPath { get; init; } = "revit-events.json";
-    public string RuntimeManifestPath { get; init; } = "runtime-manifest.json";
+    public string Command { get; set; } = string.Empty;
+    public string RequestPath { get; set; } = "revit-pull-request.json";
+    public string MetadataPath { get; set; } = "revit-metadata.json";
+    public string ElementsPath { get; set; } = "revit-elements.bhom.json";
+    public string TakeoffPath { get; set; } = "takeoff.bhom.json";
+    public string EventsPath { get; set; } = "revit-events.json";
+    public string RuntimeManifestPath { get; set; } = "runtime-manifest.json";
 
     public static CommandLineOptions Parse(string[] args)
     {
@@ -43,12 +43,14 @@ public sealed class CommandLineOptions
                 throw new ArgumentException($"Option '{flag}' requires a value.");
             }
 
-            if (!values.TryAdd(flag, args[index + 1]))
+            if (values.ContainsKey(flag))
             {
                 throw new ArgumentException(
                     $"Option '{flag}' was supplied more than once."
                 );
             }
+
+            values.Add(flag, args[index + 1]);
         }
 
         HashSet<string> allowed =

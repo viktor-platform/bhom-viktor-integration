@@ -5,6 +5,12 @@ between the `bhom_revit` Generic Worker executable and the official BHoM Revit
 Toolkit listener. It follows the same CLI, event, manifest, build, and install
 structure as the BHoM LCA gateway while using Revit-specific contracts.
 
+The gateway targets .NET Framework 4.8 because the pinned BHoM v9.2 beta
+`Revit_Adapter.dll` targets .NET Framework 4.7.2 and its socket serializer uses
+runtime dynamic dispatch. Running that adapter directly from a .NET 8 console
+host causes its internal `DataPackage` serialization to fall through to the
+unsupported-object path before a Revit request reaches the listener.
+
 ## Why the worker belongs on the Revit machine
 
 The BHoM Revit Toolkit loads a Revit plugin (`RevitListener`) and exposes the

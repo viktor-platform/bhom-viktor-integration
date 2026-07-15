@@ -63,6 +63,13 @@ public static class JsonIO
         string fullPath = ResolveJobFile(path);
         string temporaryPath = fullPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         File.WriteAllText(temporaryPath, text);
-        File.Move(temporaryPath, fullPath, overwrite: true);
+        if (File.Exists(fullPath))
+        {
+            File.Replace(temporaryPath, fullPath, null);
+        }
+        else
+        {
+            File.Move(temporaryPath, fullPath);
+        }
     }
 }

@@ -48,7 +48,7 @@ public static class RuntimeManifestFactory
             GeneratedAtUtc = DateTimeOffset.UtcNow,
             GatewayVersion = gatewayVersion,
             DotnetVersion = Environment.Version.ToString(),
-            OperatingSystem = RuntimeInformation.OSDescription,
+            OperatingSystem = Environment.OSVersion.VersionString,
             Revit = new RevitRuntimeInfo
             {
                 ListenerProcessDetected = Process.GetProcessesByName("Revit").Length == 1,
@@ -60,7 +60,8 @@ public static class RuntimeManifestFactory
     private static string ComputeSha256(string path)
     {
         using FileStream stream = File.OpenRead(path);
-        byte[] hash = SHA256.HashData(stream);
-        return System.Convert.ToHexString(hash).ToLowerInvariant();
+        using SHA256 algorithm = SHA256.Create();
+        byte[] hash = algorithm.ComputeHash(stream);
+        return BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
     }
 }
