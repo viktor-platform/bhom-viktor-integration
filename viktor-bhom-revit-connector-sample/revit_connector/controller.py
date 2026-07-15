@@ -6,7 +6,11 @@ from typing import Any
 
 import viktor as vkt
 
-from .bhom_formatter import build_lca_handoff, summarize_snapshot
+from .bhom_formatter import (
+    build_lca_handoff,
+    summarize_bhom_contract,
+    summarize_snapshot,
+)
 from .contracts import ContractError, GatewayResult, build_pull_request
 from .gateway_client import pull_model
 from .parametrization import Parametrization
@@ -127,6 +131,66 @@ class Controller(vkt.Controller):
                         summary["total_volume_m3"],
                         suffix=" m³",
                         number_of_decimals=3,
+                    ),
+                ),
+            ),
+        )
+        return vkt.DataResult(group)
+
+    @vkt.DataView("BHoM contract", duration_guess=20)
+    def bhom_contract_view(self, params: Any, **kwargs: Any):
+        result = self._pull(params)
+        contract = summarize_bhom_contract(result)
+        status = vkt.DataStatus.SUCCESS if contract["valid"] else vkt.DataStatus.WARNING
+        status_message = (
+            "Every exposed element has a BHoM GUID and Revit identifier."
+            if contract["valid"]
+            else "One or more element/material contract links are incomplete."
+        )
+
+        group = vkt.DataGroup(
+            vkt.DataItem(
+                "Contract status",
+                "Valid" if contract["valid"] else "Incomplete",
+                status=status,
+                status_message=status_message,
+                subgroup=vkt.DataGroup(
+                    vkt.DataItem("Schema version", contract["schema_version"]),
+                    vkt.DataItem("BHoM schema commit", contract["schema_commit"]),
+                ),
+            ),
+            vkt.DataItem(
+                "Element contract",
+                contract["element_count"],
+                suffix=" elements",
+                subgroup=vkt.DataGroup(
+                    vkt.DataItem("BHoM type", contract["element_contract"]),
+                    vkt.DataItem(
+                        "Mapped Revit elements",
+                        contract["mapped_element_count"],
+                    ),
+                    vkt.DataItem(
+                        "Concrete BHoM types",
+                        ", ".join(contract["element_types"]),
+                    ),
+                ),
+            ),
+            vkt.DataItem(
+                "Material contract",
+                contract["material_link_count"],
+                suffix=" element-material links",
+                subgroup=vkt.DataGroup(
+                    vkt.DataItem(
+                        "Element fragment",
+                        contract["material_fragment_contract"],
+                    ),
+                    vkt.DataItem(
+                        "Aggregated takeoff",
+                        contract["takeoff_contract"],
+                    ),
+                    vkt.DataItem(
+                        "Takeoff items",
+                        contract["takeoff_item_count"],
                     ),
                 ),
             ),

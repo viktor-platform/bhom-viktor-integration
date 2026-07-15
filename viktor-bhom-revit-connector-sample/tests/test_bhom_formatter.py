@@ -5,7 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from revit_connector.bhom_formatter import build_lca_handoff, summarize_snapshot
+from revit_connector.bhom_formatter import (
+    build_lca_handoff,
+    summarize_bhom_contract,
+    summarize_snapshot,
+)
 from revit_connector.contracts import ContractError
 from revit_connector.sample_loader import load_bundled_sample
 
@@ -21,6 +25,15 @@ def test_sample_is_lca_ready_general_material_takeoff() -> None:
     assert summary["material_count"] == 2
     assert summary["total_volume_m3"] == pytest.approx(32.4)
     assert summary["total_mass_kg"] == pytest.approx(79940.0)
+
+
+def test_bhom_contract_matches_fixture() -> None:
+    contract = summarize_bhom_contract(load_bundled_sample())
+
+    assert contract["valid"] is True
+    assert contract["mapped_element_count"] == 4
+    assert contract["takeoff_item_count"] == 2
+    assert contract["takeoff_contract"].endswith("GeneralMaterialTakeoff")
 
 
 def test_lca_handoff_matches_carbon_analysis_parameter_names() -> None:

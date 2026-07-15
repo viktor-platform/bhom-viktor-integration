@@ -15,6 +15,5 @@ executables:
       - 'revit-events.json'
       - '--runtime-manifest'
       - 'runtime-manifest.json'
-    workingDirectoryPath: ''
 
 maxParallelProcesses: 1

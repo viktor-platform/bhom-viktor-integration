@@ -4,10 +4,10 @@ A read-only VIKTOR producer app for pulling a Revit 2025 model through BHoM,
 reviewing model metadata, and preparing the existing carbon-analysis app's BHoM
 LCA input.
 
-The app runs immediately with a bundled fixture. Live Revit extraction uses a
-fixed VIKTOR Generic Worker executable named `bhom_revit`; the Windows gateway
-implementation and Revit/BHoM acceptance test are the next Windows-only work
-package.
+The app runs immediately with a bundled fixture. Live Revit extraction uses the
+fixed `BHoMRevitGateway.exe` executable through a VIKTOR Generic Worker key named
+`bhom_revit`. The gateway connects only to the official BHoM RevitListener on
+localhost and performs a read-only pull.
 
 ## What is included
 
@@ -15,6 +15,8 @@ package.
   type/GUID traceability, Revit parameters, and material quantities.
 - A VIKTOR DataView with source runtime, element/parameter counts, and aggregate
   takeoff totals.
+- A BHoM contract DataView exposing element identifiers, concrete BHoM types,
+  material fragments, aggregated takeoff type, and the pinned schema commit.
 - A strict Revit 2025 pull-request contract with category allow-list, element
   limit, expected-document guard, material takeoff enabled, and geometry disabled.
 - A `bhom_revit` Generic Worker client that collects raw BHoM elements, normalized
@@ -67,6 +69,7 @@ uvx ruff check .
 uvx ty check --python venv/bin/python
 venv/bin/python -m pytest
 viktor-cli test
+dotnet run --project gateway/tests/BHoMRevitGateway.PortableTests
 ```
 
 If reusing the environment from `../viktor-bhom-lca-service-starter`, pass that
@@ -79,9 +82,14 @@ Python path to `ty` and `pytest` instead of creating a second environment.
 2. Start Revit 2025, open the intended model, and activate **Revit Listener** in
    the BHoM ribbon. BHoM's documentation describes default local ports 14128 and
    14129; keep them local to the workstation.
-3. Implement/build the gateway against the pinned toolkit client API and install
-   it at `C:\Services\BHoMRevitGateway`.
-4. Merge [`gateway/config.example.yaml`](gateway/config.example.yaml) into the
+3. Build and install the gateway from an Administrator PowerShell session:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\build-gateway.ps1
+   powershell -ExecutionPolicy Bypass -File worker\install-gateway.ps1
+   ```
+
+4. Merge [`worker/config.example.yaml`](worker/config.example.yaml) into the
    Generic Worker config and restart the worker.
 5. Switch the app to **Revit 2025 worker** and first test with a small category
    set and an exact expected document name.

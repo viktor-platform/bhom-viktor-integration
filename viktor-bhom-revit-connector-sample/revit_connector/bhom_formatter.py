@@ -6,6 +6,8 @@ from typing import Any
 
 from .contracts import ContractError, GatewayResult, parse_json, validate_modules
 
+BHOM_SCHEMA_COMMIT = "9a3bde86d287cb9e07f40b5538a059cc546c59dc"
+
 
 def summarize_snapshot(result: GatewayResult) -> dict[str, Any]:
     metadata_elements = result.metadata["elements"]
@@ -33,6 +35,40 @@ def summarize_snapshot(result: GatewayResult) -> dict[str, Any]:
         "categories": dict(categories.most_common()),
         "bhom_types": dict(types.most_common()),
         "materials": dict(materials.most_common()),
+    }
+
+
+def summarize_bhom_contract(result: GatewayResult) -> dict[str, Any]:
+    """Summarize the element-to-material contract exposed by the gateway."""
+    metadata_elements = result.metadata["elements"]
+    takeoff_items = result.takeoff["MaterialTakeoffItems"]
+    element_types = sorted(
+        {str(item.get("bhom_type", "Unknown")) for item in metadata_elements}
+    )
+    mapped_elements = sum(
+        bool(item.get("revit_element_id")) and bool(item.get("bhom_guid"))
+        for item in metadata_elements
+    )
+    material_links = sum(len(item.get("materials", [])) for item in metadata_elements)
+
+    return {
+        "schema_version": str(result.metadata["schema_version"]),
+        "schema_commit": BHOM_SCHEMA_COMMIT,
+        "element_contract": "BH.oM.Base.IBHoMObject[]",
+        "material_fragment_contract": (
+            "BH.oM.Physical.Materials.VolumetricMaterialTakeoff"
+        ),
+        "takeoff_contract": str(result.takeoff["_t"]),
+        "element_count": len(metadata_elements),
+        "mapped_element_count": mapped_elements,
+        "element_types": element_types,
+        "material_link_count": material_links,
+        "takeoff_item_count": len(takeoff_items),
+        "valid": (
+            mapped_elements == len(metadata_elements)
+            and result.takeoff["_t"]
+            == "BH.oM.Physical.Materials.GeneralMaterialTakeoff"
+        ),
     }
 
 

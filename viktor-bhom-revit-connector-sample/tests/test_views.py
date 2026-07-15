@@ -44,6 +44,12 @@ class TestViews(unittest.TestCase):
 
         self.assertIsInstance(result, vkt.DataResult)
 
+    @mock_View(Controller)
+    def test_bhom_contract_view_returns_data_result(self) -> None:
+        result = Controller().bhom_contract_view(params=sample_params())
+
+        self.assertIsInstance(result, vkt.DataResult)
+
     def test_lca_handoff_download_is_available(self) -> None:
         result = Controller().download_lca_handoff(params=sample_params())
 

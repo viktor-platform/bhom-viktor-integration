@@ -1,8 +1,9 @@
-# Windows gateway boundary
+# Windows Revit gateway
 
-The VIKTOR sample already implements the `bhom_revit` Generic Worker client and
-the complete JSON boundary. This directory intentionally does **not** claim to
-contain a working Revit socket client yet.
+This directory implements `BHoMRevitGateway.exe`, the fixed read-only bridge
+between the `bhom_revit` Generic Worker executable and the official BHoM Revit
+Toolkit listener. It follows the same CLI, event, manifest, build, and install
+structure as the BHoM LCA gateway while using Revit-specific contracts.
 
 ## Why the worker belongs on the Revit machine
 
@@ -21,7 +22,7 @@ VIKTOR producer app
                   └─ active Revit 2025 document
 ```
 
-## Required gateway behavior
+## Implemented gateway behavior
 
 1. Read only `revit-pull-request.json` from the isolated worker job directory.
 2. Reject any operation except `pull_model_snapshot` and any Revit version
@@ -50,9 +51,22 @@ VIKTOR producer app
   runtime set. Record assembly hashes in the manifest.
 - Do not expose RevitListener ports outside the Windows host.
 
-## Windows acceptance still required
+## Build and install
 
-- Confirm the exact adapter client API against the pinned Revit Toolkit commit.
+From the sample root in Administrator PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-gateway.ps1
+powershell -ExecutionPolicy Bypass -File worker\install-gateway.ps1
+powershell -ExecutionPolicy Bypass -File worker\diagnose.ps1
+```
+
+Merge `worker/config.example.yaml` into the VIKTOR Generic Worker configuration
+and restart the worker. The gateway executable is installed at
+`C:\Services\BHoMRevitGateway\BHoMRevitGateway.exe`.
+
+## Windows acceptance
+
 - Start Revit 2025, open the intended document, and activate the BHoM listener.
 - Execute one fixed sample through the installed worker and validate every BHoM
   output with the matching `BHoM_JSONSchema` commit.
