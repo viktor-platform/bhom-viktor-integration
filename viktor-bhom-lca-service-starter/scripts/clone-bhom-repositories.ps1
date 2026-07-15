@@ -20,10 +20,6 @@ $Repositories = @(
     [ordered]@{
         Name = "LifeCycleAssessment_Toolkit"
         Url = "https://github.com/BHoM/LifeCycleAssessment_Toolkit.git"
-    },
-    [ordered]@{
-        Name = "BHoM_JSONSchema"
-        Url = "https://github.com/BHoM/BHoM_JSONSchema.git"
     }
 )
 

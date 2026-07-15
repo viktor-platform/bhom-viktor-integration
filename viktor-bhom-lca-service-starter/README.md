@@ -41,6 +41,12 @@ powershell -ExecutionPolicy Bypass -File scripts\build-gateway.ps1 `
   -RootDirectory C:\dev\bhom-lca
 ```
 
+The normal build compiles `LifeCycleAssessment_Engine` from source. MSBuild
+then publishes only the gateway's resolved BHoM/LCA dependency closure; it does
+not copy every DLL from the installed BHoM directory. Use
+`-SkipToolkitBuild` only when intentionally building against the installed
+LCA assemblies.
+
 Install the published gateway from an Administrator PowerShell session:
 
 ```powershell
@@ -76,9 +82,13 @@ BHoMLcaGateway-1.0.0-win-x64.zip.sha256
 ```
 
 Create tag `v1.0.0` in the GitHub **Releases** interface and upload both files
-as release assets. The ZIP contains the complete gateway directory, installer,
-diagnostic command, worker configuration example and administrator README.
+as release assets. The ZIP contains the dependency-closed gateway directory,
+installer, diagnostic command, worker configuration example and administrator
+README.
 Do not upload `BHoMLcaGateway.exe` by itself.
+
+Keep the release private or marked as a prerelease until redistribution rights
+for the included BHoM and third-party assemblies have been confirmed.
 
 ## Install from a GitHub Release
 

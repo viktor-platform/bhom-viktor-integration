@@ -35,6 +35,7 @@ $RequiredInstalledAssemblies = @(
     "BHoM.dll",
     "BHoM_Engine.dll",
     "Dimensional_oM.dll",
+    "LifeCycleAssessment_Engine.dll",
     "LifeCycleAssessment_oM.dll",
     "Physical_oM.dll",
     "Serialiser_Engine.dll"
@@ -49,12 +50,12 @@ $RuntimeDirectory = Join-Path $ServiceDirectory "gateway\runtime"
 $PublishDirectory = Join-Path $ServiceDirectory "gateway\publish\$RuntimeIdentifier"
 Remove-Item -Recurse -Force $RuntimeDirectory -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force $PublishDirectory -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path $RuntimeDirectory | Out-Null
 New-Item -ItemType Directory -Force -Path $PublishDirectory | Out-Null
 
-Copy-Item -Path (Join-Path $InstalledBHoMAssemblies "*.dll") -Destination $RuntimeDirectory -Force
+$ReferenceDirectory = $InstalledBHoMAssemblies
 
 if (-not $SkipToolkitBuild) {
+    New-Item -ItemType Directory -Force -Path $RuntimeDirectory | Out-Null
     $EngineProject = Join-Path $RootDirectory "external\LifeCycleAssessment_Toolkit\LifeCycleAssessment_Engine\LifeCycleAssessment_Engine.csproj"
     if (-not (Test-Path $EngineProject)) {
         throw "The LCA toolkit source was not found at $EngineProject. Run clone-bhom-repositories.ps1 or use -SkipToolkitBuild."
@@ -68,19 +69,23 @@ if (-not $SkipToolkitBuild) {
     if ($LASTEXITCODE -ne 0) {
         throw "The LifeCycleAssessment Engine build failed."
     }
-}
 
-$RequiredRuntimeAssemblies = @(
-    "BHoM.dll",
-    "LifeCycleAssessment_Engine.dll",
-    "LifeCycleAssessment_oM.dll",
-    "Physical_oM.dll",
-    "Serialiser_Engine.dll"
-)
-foreach ($Name in $RequiredRuntimeAssemblies) {
-    if (-not (Test-Path (Join-Path $RuntimeDirectory $Name))) {
-        throw "Gateway runtime assembly is missing: $Name"
+    $GatewayReferences = @(
+        "BHoM.dll",
+        "Dimensional_oM.dll",
+        "LifeCycleAssessment_Engine.dll",
+        "LifeCycleAssessment_oM.dll",
+        "Physical_oM.dll",
+        "Serialiser_Engine.dll"
+    )
+    foreach ($Name in $GatewayReferences) {
+        $Destination = Join-Path $RuntimeDirectory $Name
+        if (-not (Test-Path $Destination)) {
+            Copy-Item (Join-Path $InstalledBHoMAssemblies $Name) $Destination
+        }
     }
+
+    $ReferenceDirectory = $RuntimeDirectory
 }
 
 $GatewayProject = Join-Path $ServiceDirectory "gateway\src\BHoMLcaGateway\BHoMLcaGateway.csproj"
@@ -89,12 +94,10 @@ dotnet publish $GatewayProject `
     --runtime $RuntimeIdentifier `
     --self-contained false `
     --output $PublishDirectory `
-    --property:BHoMAssembliesDir="$RuntimeDirectory"
+    --property:BHoMAssembliesDir="$ReferenceDirectory"
 if ($LASTEXITCODE -ne 0) {
     throw "The gateway publish failed."
 }
-
-Copy-Item -Path (Join-Path $RuntimeDirectory "*.dll") -Destination $PublishDirectory -Force
 
 $DataSetSource = Join-Path $RootDirectory "external\LifeCycleAssessment_Toolkit\DataSets"
 if (Test-Path $DataSetSource) {
