@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -14,11 +15,105 @@ public static class BHoMJsonProjection
 
     public static JsonArray ParseElementArray(string serializedObjects)
     {
-        JsonNode? node = JsonNode.Parse(serializedObjects);
+        JsonNode? node = JsonNode.Parse(
+            NormalizeNonFiniteNumbers(serializedObjects)
+        );
         return node as JsonArray
             ?? throw new InvalidDataException(
                 "The BHoM serializer did not return a JSON array."
             );
+    }
+
+    private static string NormalizeNonFiniteNumbers(string json)
+    {
+        StringBuilder normalized = new(json.Length);
+        bool inString = false;
+        bool escaped = false;
+        for (int index = 0; index < json.Length;)
+        {
+            char current = json[index];
+            if (inString)
+            {
+                normalized.Append(current);
+                if (escaped)
+                {
+                    escaped = false;
+                }
+                else if (current == '\\')
+                {
+                    escaped = true;
+                }
+                else if (current == '"')
+                {
+                    inString = false;
+                }
+
+                index++;
+                continue;
+            }
+
+            if (current == '"')
+            {
+                inString = true;
+                normalized.Append(current);
+                index++;
+                continue;
+            }
+
+            int tokenLength = NonFiniteTokenLength(json, index);
+            if (tokenLength > 0)
+            {
+                normalized.Append("null");
+                index += tokenLength;
+                continue;
+            }
+
+            normalized.Append(current);
+            index++;
+        }
+
+        return normalized.ToString();
+    }
+
+    private static int NonFiniteTokenLength(string json, int index)
+    {
+        string[] tokens = ["-Infinity", "Infinity", "NaN"];
+        foreach (string token in tokens)
+        {
+            if (
+                index + token.Length <= json.Length
+                && string.CompareOrdinal(json, index, token, 0, token.Length) == 0
+                && IsValueStart(json, index)
+                && IsValueEnd(json, index + token.Length)
+            )
+            {
+                return token.Length;
+            }
+        }
+
+        return 0;
+    }
+
+    private static bool IsValueStart(string json, int index)
+    {
+        if (index == 0)
+        {
+            return true;
+        }
+
+        char previous = json[index - 1];
+        return previous is ':' or '[' or ',' || char.IsWhiteSpace(previous);
+    }
+
+    private static bool IsValueEnd(string json, int index)
+    {
+        if (index == json.Length)
+        {
+            return true;
+        }
+
+        char next = json[index];
+        return next is ',' or ']' or '}' || char.IsWhiteSpace(next);
     }
 
     public static void RemovePulledParameters(JsonArray elements)

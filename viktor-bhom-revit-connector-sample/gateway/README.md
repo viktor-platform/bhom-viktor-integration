@@ -15,6 +15,10 @@ bundled BHoM `*_oM.dll` assemblies. The normal BHoM UI does this during startup;
 the standalone gateway must do it explicitly so returned Revit objects resolve
 to concrete `Wall`, `Floor`, `Material`, and `Construction` types instead of
 fallback `CustomObject` instances.
+Because BHoM's JSON writer can emit bare `NaN` or infinite numeric values, the
+gateway normalizes those non-standard tokens to JSON `null` outside quoted
+strings before producing worker artifacts. This keeps the raw BHoM object graph
+valid JSON without changing legitimate text values.
 
 ## Why the worker belongs on the Revit machine
 

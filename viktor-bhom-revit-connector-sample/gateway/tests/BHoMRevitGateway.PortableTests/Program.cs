@@ -119,6 +119,21 @@ string serializedObjects =
     ]
     """;
 JsonArray elements = BHoMJsonProjection.ParseElementArray(serializedObjects);
+JsonArray nonFiniteNumbers = BHoMJsonProjection.ParseElementArray(
+    """
+    [{"Name":"NaN remains text","A":NaN,"B":Infinity,"C":-Infinity}]
+    """
+);
+Check(
+    nonFiniteNumbers[0]!["Name"]!.GetValue<string>() == "NaN remains text",
+    "A non-finite token inside a JSON string was modified."
+);
+Check(
+    nonFiniteNumbers[0]!["A"] is null
+        && nonFiniteNumbers[0]!["B"] is null
+        && nonFiniteNumbers[0]!["C"] is null,
+    "Bare non-finite BHoM numbers were not normalized to JSON null values."
+);
 MetadataDocument metadata = BHoMJsonProjection.BuildMetadata(
     elements,
     request,
