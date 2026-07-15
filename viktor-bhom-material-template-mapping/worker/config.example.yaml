@@ -1,0 +1,15 @@
+executables:
+  bhom_material_lookup:
+    path: 'C:\Services\BHoMMaterialLookupGateway\BHoMMaterialLookupGateway.exe'
+    arguments:
+      - 'query'
+      - '--request'
+      - 'lookup-request.json'
+      - '--output'
+      - 'lookup-result.json'
+      - '--events'
+      - 'lookup-events.json'
+      - '--runtime-manifest'
+      - 'runtime-manifest.json'
+
+maxParallelProcesses: 2
