@@ -22,6 +22,7 @@ gateway/runtime/
 # Generated source locks
 external-revisions.json
 *.sha256
+artifacts/
 
 # Worker output
 analysis-result.json

@@ -59,6 +59,42 @@ powershell -ExecutionPolicy Bypass -File worker\run-local.ps1
 
 The local sample check expects `total_kgco2e = 19365`.
 
+## Create a GitHub Release package
+
+After the gateway build and diagnostics pass, create the administrator ZIP:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\package-release.ps1 `
+  -Version 1.0.0
+```
+
+This creates two ignored files under `artifacts/`:
+
+```text
+BHoMLcaGateway-1.0.0-win-x64.zip
+BHoMLcaGateway-1.0.0-win-x64.zip.sha256
+```
+
+Create tag `v1.0.0` in the GitHub **Releases** interface and upload both files
+as release assets. The ZIP contains the complete gateway directory, installer,
+diagnostic command, worker configuration example and administrator README.
+Do not upload `BHoMLcaGateway.exe` by itself.
+
+## Install from a GitHub Release
+
+The Windows Generic Worker administrator:
+
+1. Downloads the ZIP and checksum from the repository's **Releases** page.
+2. Extracts the complete ZIP.
+3. Opens PowerShell as Administrator in the extracted directory.
+4. Runs `powershell -ExecutionPolicy Bypass -File .\install.ps1`.
+5. Merges `config.example.yaml` into the Generic Worker configuration.
+6. Restarts the Generic Worker and runs `.\diagnose.ps1`.
+
+After this one-time worker setup, VIKTOR web-app users do not download the ZIP
+or run the executable. They only upload their inputs and view the results in
+VIKTOR.
+
 ## Run the VIKTOR app
 
 ```powershell

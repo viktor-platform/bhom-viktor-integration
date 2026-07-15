@@ -14,7 +14,14 @@ if (-not $Principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
 }
 
 if ([string]::IsNullOrWhiteSpace($SourceDirectory)) {
-    $SourceDirectory = (Resolve-Path (Join-Path $PSScriptRoot "..\gateway\publish\win-x64")).Path
+    $PackagedSource = Join-Path $PSScriptRoot "gateway"
+    $RepositorySource = Join-Path $PSScriptRoot "..\gateway\publish\win-x64"
+    if (Test-Path (Join-Path $PackagedSource "BHoMLcaGateway.exe")) {
+        $SourceDirectory = $PackagedSource
+    }
+    else {
+        $SourceDirectory = (Resolve-Path $RepositorySource).Path
+    }
 }
 else {
     $SourceDirectory = [System.IO.Path]::GetFullPath($SourceDirectory)
