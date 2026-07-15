@@ -28,7 +28,6 @@ if (-not (Test-Path $AssembliesDirectory)) {
 $RequiredAssemblies = @(
     "Adapter_Engine.dll",
     "Adapter_oM.dll",
-    "Base_Engine.dll",
     "BHoM.dll",
     "BHoM_Adapter.dll",
     "BHoM_Engine.dll",
