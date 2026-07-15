@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "job_id": "2bb20e7b-590d-5a0e-a79c-1ee7d71f87b8",
+  "source": {
+    "application": "Autodesk Revit",
+    "revit_version": "2025",
+    "document_name": "Sample Office 2025.rvt",
+    "bhom_version": "9.x sample",
+    "mode": "bundled sample"
+  },
+  "extraction": {
+    "read_only": true,
+    "include_parameters": true,
+    "include_material_takeoff": true,
+    "include_geometry": false,
+    "categories": [
+      "Walls",
+      "Floors",
+      "Structural Columns"
+    ]
+  },
+  "elements": [
+    {
+      "bhom_guid": "3ff71bc9-f894-41fd-98ca-03f18c56e266",
+      "bhom_type": "BH.oM.Physical.Elements.Wall",
+      "name": "Basic Wall: Exterior - Concrete: 100421",
+      "category": "Walls",
+      "revit_element_id": "100421",
+      "revit_unique_id": "a0d5d8ec-6f86-4a1b-b880-000000018845",
+      "parameters": [
+        {"name": "Base Constraint", "value": "Level 01", "unit": null, "is_read_only": false},
+        {"name": "Top Constraint", "value": "Level 02", "unit": null, "is_read_only": false},
+        {"name": "Area", "value": 80.0, "unit": "m²", "is_read_only": true}
+      ],
+      "materials": [
+        {"name": "Concrete C30/37", "volume_m3": 10.0, "mass_kg": 24000.0}
+      ]
+    },
+    {
+      "bhom_guid": "e5f9944f-63ad-445b-bc33-c656aac2e63a",
+      "bhom_type": "BH.oM.Physical.Elements.Wall",
+      "name": "Basic Wall: Core - Concrete: 100422",
+      "category": "Walls",
+      "revit_element_id": "100422",
+      "revit_unique_id": "a0d5d8ec-6f86-4a1b-b880-000000018846",
+      "parameters": [
+        {"name": "Base Constraint", "value": "Level 01", "unit": null, "is_read_only": false},
+        {"name": "Top Constraint", "value": "Level 02", "unit": null, "is_read_only": false},
+        {"name": "Area", "value": 16.0, "unit": "m²", "is_read_only": true}
+      ],
+      "materials": [
+        {"name": "Concrete C30/37", "volume_m3": 2.0, "mass_kg": 4800.0}
+      ]
+    },
+    {
+      "bhom_guid": "bf2fceeb-22b1-4b52-96be-62b33267722b",
+      "bhom_type": "BH.oM.Physical.Elements.Floor",
+      "name": "Floor: 250 mm concrete slab: 101201",
+      "category": "Floors",
+      "revit_element_id": "101201",
+      "revit_unique_id": "adf83b1e-8c4f-4920-a070-000000018b51",
+      "parameters": [
+        {"name": "Level", "value": "Level 02", "unit": null, "is_read_only": false},
+        {"name": "Area", "value": 80.0, "unit": "m²", "is_read_only": true},
+        {"name": "Volume", "value": 20.0, "unit": "m³", "is_read_only": true}
+      ],
+      "materials": [
+        {"name": "Concrete C30/37", "volume_m3": 20.0, "mass_kg": 48000.0}
+      ]
+    },
+    {
+      "bhom_guid": "0fae5283-df82-439e-98d3-f29dd78fc953",
+      "bhom_type": "BH.oM.Physical.Elements.Column",
+      "name": "UC 305x305x97: 102018",
+      "category": "Structural Columns",
+      "revit_element_id": "102018",
+      "revit_unique_id": "3f6f1865-381a-45a2-baf2-000000018e82",
+      "parameters": [
+        {"name": "Base Level", "value": "Level 01", "unit": null, "is_read_only": false},
+        {"name": "Top Level", "value": "Level 02", "unit": null, "is_read_only": false},
+        {"name": "Length", "value": 4.0, "unit": "m", "is_read_only": true}
+      ],
+      "materials": [
+        {"name": "Structural Steel", "volume_m3": 0.4, "mass_kg": 3140.0}
+      ]
+    }
+  ]
+}

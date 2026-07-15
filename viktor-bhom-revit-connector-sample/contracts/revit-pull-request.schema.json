@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:viktor-bhom-revit:pull-request:1.0",
+  "title": "VIKTOR BHoM Revit pull request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "operation",
+    "revit_version",
+    "expected_document_name",
+    "filters",
+    "options"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "job_id": {"type": "string", "format": "uuid"},
+    "operation": {"const": "pull_model_snapshot"},
+    "revit_version": {"const": "2025"},
+    "expected_document_name": {"type": ["string", "null"]},
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["categories"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "Walls",
+              "Floors",
+              "Structural Columns",
+              "Structural Framing",
+              "Roofs"
+            ]
+          }
+        }
+      }
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "include_parameters",
+        "include_material_takeoff",
+        "include_geometry",
+        "element_limit"
+      ],
+      "properties": {
+        "include_parameters": {"type": "boolean"},
+        "include_material_takeoff": {"const": true},
+        "include_geometry": {"const": false},
+        "element_limit": {"type": "integer", "minimum": 1, "maximum": 10000}
+      }
+    }
+  }
+}

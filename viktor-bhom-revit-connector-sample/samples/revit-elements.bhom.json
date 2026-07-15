@@ -1,0 +1,104 @@
+[
+  {
+    "_t": "BH.oM.Physical.Elements.Wall",
+    "BHoM_Guid": "3ff71bc9-f894-41fd-98ca-03f18c56e266",
+    "Name": "Basic Wall: Exterior - Concrete: 100421",
+    "Fragments": [
+      {
+        "_t": "BH.oM.Physical.Materials.VolumetricMaterialTakeoff",
+        "Materials": {
+          "_v": [
+            {
+              "_t": "BH.oM.Physical.Materials.Material",
+              "Name": "Concrete C30/37",
+              "Density": 2400.0,
+              "Properties": []
+            }
+          ]
+        },
+        "Volumes": {"_v": [10.0]}
+      },
+      {
+        "_t": "BH.oM.Adapters.Revit.Parameters.RevitPulledParameters",
+        "Parameters": [
+          {"Name": "Base Constraint", "Value": "Level 01", "Quantity": null, "Unit": null, "IsReadOnly": false},
+          {"Name": "Area", "Value": 80.0, "Quantity": "Area", "Unit": "m²", "IsReadOnly": true}
+        ]
+      }
+    ],
+    "Tags": ["Revit 2025", "Walls"],
+    "CustomData": {
+      "RevitElementId": "100421",
+      "RevitUniqueId": "a0d5d8ec-6f86-4a1b-b880-000000018845"
+    }
+  },
+  {
+    "_t": "BH.oM.Physical.Elements.Wall",
+    "BHoM_Guid": "e5f9944f-63ad-445b-bc33-c656aac2e63a",
+    "Name": "Basic Wall: Core - Concrete: 100422",
+    "Fragments": [
+      {
+        "_t": "BH.oM.Physical.Materials.VolumetricMaterialTakeoff",
+        "Materials": {
+          "_v": [
+            {
+              "_t": "BH.oM.Physical.Materials.Material",
+              "Name": "Concrete C30/37",
+              "Density": 2400.0,
+              "Properties": []
+            }
+          ]
+        },
+        "Volumes": {"_v": [2.0]}
+      }
+    ],
+    "Tags": ["Revit 2025", "Walls"],
+    "CustomData": {"RevitElementId": "100422"}
+  },
+  {
+    "_t": "BH.oM.Physical.Elements.Floor",
+    "BHoM_Guid": "bf2fceeb-22b1-4b52-96be-62b33267722b",
+    "Name": "Floor: 250 mm concrete slab: 101201",
+    "Fragments": [
+      {
+        "_t": "BH.oM.Physical.Materials.VolumetricMaterialTakeoff",
+        "Materials": {
+          "_v": [
+            {
+              "_t": "BH.oM.Physical.Materials.Material",
+              "Name": "Concrete C30/37",
+              "Density": 2400.0,
+              "Properties": []
+            }
+          ]
+        },
+        "Volumes": {"_v": [20.0]}
+      }
+    ],
+    "Tags": ["Revit 2025", "Floors"],
+    "CustomData": {"RevitElementId": "101201"}
+  },
+  {
+    "_t": "BH.oM.Physical.Elements.Column",
+    "BHoM_Guid": "0fae5283-df82-439e-98d3-f29dd78fc953",
+    "Name": "UC 305x305x97: 102018",
+    "Fragments": [
+      {
+        "_t": "BH.oM.Physical.Materials.VolumetricMaterialTakeoff",
+        "Materials": {
+          "_v": [
+            {
+              "_t": "BH.oM.Physical.Materials.Material",
+              "Name": "Structural Steel",
+              "Density": 7850.0,
+              "Properties": []
+            }
+          ]
+        },
+        "Volumes": {"_v": [0.4]}
+      }
+    ],
+    "Tags": ["Revit 2025", "Structural Columns"],
+    "CustomData": {"RevitElementId": "102018"}
+  }
+]

@@ -1,0 +1,20 @@
+executables:
+  bhom_revit:
+    path: 'C:\Services\BHoMRevitGateway\BHoMRevitGateway.exe'
+    arguments:
+      - 'pull'
+      - '--request'
+      - 'revit-pull-request.json'
+      - '--metadata'
+      - 'revit-metadata.json'
+      - '--elements'
+      - 'revit-elements.bhom.json'
+      - '--takeoff'
+      - 'takeoff.bhom.json'
+      - '--events'
+      - 'revit-events.json'
+      - '--runtime-manifest'
+      - 'runtime-manifest.json'
+    workingDirectoryPath: ''
+
+maxParallelProcesses: 1
