@@ -71,18 +71,18 @@ def test_lca_handoff_matches_carbon_analysis_parameter_names() -> None:
     )
 
 
-def test_combined_module_cannot_overlap_individual_modules() -> None:
+def test_combined_module_is_not_supported() -> None:
     result = load_bundled_sample()
     templates = (ROOT / "samples/template-materials.bhom.json").read_text(
         encoding="utf-8"
     )
 
-    with pytest.raises(ContractError, match="cannot be combined"):
+    with pytest.raises(ContractError, match="Unsupported LCA modules"):
         build_lca_handoff(
             result=result,
             project_id="sample",
             project_name="Sample",
             gross_floor_area_m2=500.0,
-            modules=["A1", "A1toA3"],
+            modules=["A1toA3"],
             template_materials_json=templates,
         )

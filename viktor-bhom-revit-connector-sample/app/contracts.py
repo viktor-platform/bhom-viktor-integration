@@ -15,7 +15,7 @@ ALLOWED_CATEGORIES: Final[frozenset[str]] = frozenset(
         "Roofs",
     }
 )
-ALLOWED_MODULES: Final[frozenset[str]] = frozenset({"A1", "A2", "A3", "A1toA3"})
+ALLOWED_MODULES: Final[frozenset[str]] = frozenset({"A1", "A2", "A3"})
 
 
 class ContractError(ValueError):
@@ -122,6 +122,4 @@ def validate_modules(modules: list[str]) -> list[str]:
         raise ContractError(f"Unsupported LCA modules: {', '.join(sorted(unknown))}")
     if not clean_modules:
         raise ContractError("Select at least one LCA module.")
-    if "A1toA3" in clean_modules and set(clean_modules) & {"A1", "A2", "A3"}:
-        raise ContractError("A1toA3 cannot be combined with A1, A2, or A3.")
     return clean_modules

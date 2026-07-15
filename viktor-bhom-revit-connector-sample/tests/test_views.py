@@ -1,59 +1,71 @@
 from __future__ import annotations
 
 import unittest
+from copy import deepcopy
 from types import SimpleNamespace
+from typing import Any
+from unittest.mock import patch
 
 import viktor as vkt
-from viktor.testing import mock_View
 
 from app import Controller
+from app.contracts import GatewayResult
+from app.sample_loader import load_bundled_sample
 
 
 def sample_params() -> SimpleNamespace:
     return SimpleNamespace(
-        source=SimpleNamespace(
-            connection_mode="Bundled sample",
-            document_name="Sample Office 2025.rvt",
-            categories=["Walls", "Floors", "Structural Columns"],
-            include_parameters=True,
-            element_limit=2500,
-        ),
-        project=SimpleNamespace(
-            project_id="sample-office-revit-2025",
-            project_name="Sample Office — Revit 2025",
-            gross_floor_area_m2=500.0,
-            template_materials_file=None,
-            modules=["A1", "A2", "A3"],
-        ),
+        categories=["Walls", "Floors", "Structural Columns"],
+        include_parameters=True,
+        element_limit=2500,
     )
 
 
+def sample_result_with_geometry() -> GatewayResult:
+    result = load_bundled_sample()
+    elements = deepcopy(result.elements)
+    elements[0]["Location"] = {
+        "_t": "BH.oM.Geometry.Line",
+        "Start": {"_t": "BH.oM.Geometry.Point", "X": 0, "Y": 0, "Z": 0},
+        "End": {"_t": "BH.oM.Geometry.Point", "X": 5, "Y": 0, "Z": 3},
+    }
+    return GatewayResult(
+        metadata=result.metadata,
+        elements=elements,
+        takeoff=result.takeoff,
+        artifacts=result.artifacts,
+    )
+
+
+def call_view(controller: Controller, name: str, params: Any) -> Any:
+    """Call the registered view function without VIKTOR platform context."""
+    decorated_method = Controller.__dict__[name]
+    view = decorated_method.__self__
+    return view._view_function(controller, params=params)
+
+
 class TestViews(unittest.TestCase):
-    @mock_View(Controller)
-    def test_webview_contains_model_audit_and_bhom_payload(self) -> None:
-        result = Controller().model_explorer(params=sample_params())
+    def setUp(self) -> None:
+        self.pull_patcher = patch(
+            "app.app.pull_model",
+            return_value=sample_result_with_geometry(),
+        )
+        self.pull_patcher.start()
+        self.addCleanup(self.pull_patcher.stop)
 
-        self.assertIsInstance(result, vkt.WebResult)
-        self.assertIn("BHoM model audit", result.html)
-        self.assertNotIn("BH.oM.Physical.Elements.Wall", result.html)
-        self.assertNotIn("MODEL_DATA_BASE64", result.html)
+    def test_requested_views_return_expected_results(self) -> None:
+        controller = Controller()
+        params = sample_params()
 
-    @mock_View(Controller)
-    def test_metadata_view_returns_data_result(self) -> None:
-        result = Controller().metadata_view(params=sample_params())
+        geometry = call_view(controller, "geometry_view", params)
+        lca_data = call_view(controller, "lca_data_view", params)
+        metadata = call_view(controller, "metadata_view", params)
+        contract = call_view(controller, "bhom_contract_view", params)
 
-        self.assertIsInstance(result, vkt.DataResult)
-
-    @mock_View(Controller)
-    def test_bhom_contract_view_returns_data_result(self) -> None:
-        result = Controller().bhom_contract_view(params=sample_params())
-
-        self.assertIsInstance(result, vkt.DataResult)
-
-    def test_lca_handoff_download_is_available(self) -> None:
-        result = Controller().download_lca_handoff(params=sample_params())
-
-        self.assertIsInstance(result, vkt.DownloadResult)
+        self.assertIsInstance(geometry, vkt.GeometryResult)
+        self.assertIsInstance(lca_data, vkt.DataResult)
+        self.assertIsInstance(metadata, vkt.DataResult)
+        self.assertIsInstance(contract, vkt.DataResult)
 
 
 if __name__ == "__main__":

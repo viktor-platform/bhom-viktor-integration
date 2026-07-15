@@ -73,15 +73,9 @@ def execute_worker(
 
 def pull_model(
     *,
-    connection_mode: str,
     request: PullRequest,
     timeout_seconds: int = 300,
 ) -> GatewayResult:
-    if connection_mode == "Bundled sample":
-        return load_bundled_sample()
-    if connection_mode != "Revit 2025 worker":
-        raise ValueError(f"Unsupported connection mode: {connection_mode}")
-
     outputs = execute_worker(
         request_json=request.to_json(),
         timeout_seconds=timeout_seconds,

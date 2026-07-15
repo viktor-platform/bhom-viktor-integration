@@ -38,6 +38,110 @@ def summarize_snapshot(result: GatewayResult) -> dict[str, Any]:
     }
 
 
+def _sequence(value: Any) -> list[Any]:
+    if isinstance(value, list):
+        return value
+    if isinstance(value, dict):
+        wrapped = value.get("_v")
+        if isinstance(wrapped, list):
+            return wrapped
+    return []
+
+
+def _positive_float(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if number > 0 else None
+
+
+def material_density(material: dict[str, Any]) -> tuple[float | None, str]:
+    """Resolve density using the same information available in the BHoM payload."""
+    direct_density = _positive_float(material.get("Density"))
+    if direct_density is not None:
+        return direct_density, "BHoM Material.Density"
+
+    fallback: tuple[float, str] | None = None
+    for prop in _sequence(material.get("Properties")):
+        if not isinstance(prop, dict):
+            continue
+        density = _positive_float(prop.get("Density"))
+        if density is None:
+            continue
+        fragment_type = str(prop.get("_t", "")).rsplit(".", maxsplit=1)[-1]
+        candidate = (density, f"{fragment_type}.Density")
+        if fragment_type == "SolidMaterial":
+            return candidate
+        fallback = fallback or candidate
+
+    return fallback or (None, "Unavailable")
+
+
+def summarize_material_inputs(
+    result: GatewayResult,
+    template_materials: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Aggregate takeoff items into the material inputs required by LCA."""
+    template_names = {
+        str(material.get("Name", "")).strip().casefold()
+        for material in template_materials
+        if str(material.get("Name", "")).strip()
+    }
+    grouped: dict[str, dict[str, Any]] = {}
+
+    for item in result.takeoff["MaterialTakeoffItems"]:
+        material = item.get("Material")
+        if not isinstance(material, dict):
+            continue
+        name = str(material.get("Name") or "Unnamed material").strip()
+        key = name.casefold()
+        row = grouped.setdefault(
+            key,
+            {
+                "name": name,
+                "volume_m3": 0.0,
+                "reported_mass_kg": 0.0,
+                "calculated_mass_kg": 0.0,
+                "number_items": 0,
+                "density_mass_kg": 0.0,
+                "density_volume_m3": 0.0,
+                "density_sources": set(),
+                "template_match": key in template_names,
+            },
+        )
+
+        volume = float(item.get("Volume", 0.0) or 0.0)
+        reported_mass = float(item.get("Mass", 0.0) or 0.0)
+        density, density_source = material_density(material)
+        calculated_mass = reported_mass
+        if calculated_mass <= 0 and density is not None:
+            calculated_mass = volume * density
+
+        row["volume_m3"] += volume
+        row["reported_mass_kg"] += reported_mass
+        row["calculated_mass_kg"] += calculated_mass
+        row["number_items"] += int(item.get("NumberItem", 0) or 0)
+        if density is not None:
+            row["density_mass_kg"] += volume * density
+            row["density_volume_m3"] += volume
+            row["density_sources"].add(density_source)
+
+    rows: list[dict[str, Any]] = []
+    for row in grouped.values():
+        density_volume = float(row.pop("density_volume_m3"))
+        density_mass = float(row.pop("density_mass_kg"))
+        sources = sorted(row.pop("density_sources"))
+        row["density_kg_m3"] = (
+            density_mass / density_volume if density_volume > 0 else None
+        )
+        row["density_source"] = ", ".join(sources) if sources else "Unavailable"
+        row["density_complete"] = density_volume >= float(row["volume_m3"])
+        rows.append(row)
+
+    return sorted(rows, key=lambda row: str(row["name"]).casefold())
+
+
 def summarize_bhom_contract(result: GatewayResult) -> dict[str, Any]:
     """Summarize the element-to-material contract exposed by the gateway."""
     metadata_elements = result.metadata["elements"]
