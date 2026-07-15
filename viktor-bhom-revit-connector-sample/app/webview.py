@@ -5,7 +5,9 @@ import json
 from pathlib import Path
 from typing import Any, Final
 
-TEMPLATE: Final[Path] = Path(__file__).resolve().parent / "templates" / "model-explorer.html"
+TEMPLATE: Final[Path] = (
+    Path(__file__).resolve().parent / "templates" / "model-explorer.html"
+)
 
 
 def build_model_explorer(metadata: dict[str, Any]) -> str:
