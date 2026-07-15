@@ -27,6 +27,14 @@
       <HintPath>$(BHoMAssembliesDir)\BHoM.dll</HintPath>
       <Private>true</Private>
     </Reference>
+    <Reference Include="BHoM_Adapter">
+      <HintPath>$(BHoMAssembliesDir)\BHoM_Adapter.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Data_oM">
+      <HintPath>$(BHoMAssembliesDir)\Data_oM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
     <Reference Include="Revit_Adapter">
       <HintPath>$(BHoMAssembliesDir)\Revit_Adapter.dll</HintPath>
       <Private>true</Private>
@@ -44,6 +52,8 @@
   <Target Name="ValidateBHoMReferences" BeforeTargets="ResolveReferences">
     <Error Condition="!Exists('$(BHoMAssembliesDir)\Adapter_oM.dll')" Text="Missing Adapter_oM.dll in $(BHoMAssembliesDir)." />
     <Error Condition="!Exists('$(BHoMAssembliesDir)\BHoM.dll')" Text="Missing BHoM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\BHoM_Adapter.dll')" Text="Missing BHoM_Adapter.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Data_oM.dll')" Text="Missing Data_oM.dll in $(BHoMAssembliesDir)." />
     <Error Condition="!Exists('$(BHoMAssembliesDir)\Revit_Adapter.dll')" Text="Missing Revit_Adapter.dll in $(BHoMAssembliesDir)." />
     <Error Condition="!Exists('$(BHoMAssembliesDir)\Revit_oM.dll')" Text="Missing Revit_oM.dll in $(BHoMAssembliesDir)." />
     <Error Condition="!Exists('$(BHoMAssembliesDir)\Serialiser_Engine.dll')" Text="Missing Serialiser_Engine.dll in $(BHoMAssembliesDir)." />
