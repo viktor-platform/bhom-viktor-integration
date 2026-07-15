@@ -81,8 +81,13 @@ try {
     Compress-Archive -Path $PackageDirectory -DestinationPath $ArchivePath
 
     $Checksum = (Get-FileHash -Path $ArchivePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    "$Checksum  $([System.IO.Path]::GetFileName($ArchivePath))" |
-        Set-Content -Path $ChecksumPath -Encoding ASCII
+    $ChecksumLine = "$Checksum  $([System.IO.Path]::GetFileName($ArchivePath))`n"
+    $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText(
+        $ChecksumPath,
+        $ChecksumLine,
+        $Utf8NoBom
+    )
 }
 finally {
     Remove-Item -Path $StagingRoot -Recurse -Force -ErrorAction SilentlyContinue
