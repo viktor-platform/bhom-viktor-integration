@@ -1,0 +1,34 @@
+{
+  "_t": "BH.oM.Physical.Materials.GeneralMaterialTakeoff",
+  "Name": "Sample Revit material takeoff",
+  "MaterialTakeoffItems": [
+    {
+      "_t": "BH.oM.Physical.Materials.TakeoffItem",
+      "Material": {
+        "_t": "BH.oM.Physical.Materials.Material",
+        "Name": "Concrete C30/37",
+        "Density": 2400.0,
+        "Properties": []
+      },
+      "Volume": 32.0,
+      "Mass": 0.0,
+      "Area": 176.0,
+      "Length": 0.0,
+      "NumberItem": 3
+    },
+    {
+      "_t": "BH.oM.Physical.Materials.TakeoffItem",
+      "Material": {
+        "_t": "BH.oM.Physical.Materials.Material",
+        "Name": "Structural Steel",
+        "Density": 7850.0,
+        "Properties": []
+      },
+      "Volume": 0.4,
+      "Mass": 0.0,
+      "Area": 0.0,
+      "Length": 4.0,
+      "NumberItem": 1
+    }
+  ]
+}

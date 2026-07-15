@@ -1,0 +1,92 @@
+[
+  {
+    "_t": "BH.oM.Physical.Materials.Material",
+    "Name": "Concrete C30/37",
+    "Density": 2400.0,
+    "Properties": [
+      {
+        "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.EnvironmentalProductDeclaration",
+        "Type": "Sector",
+        "EnvironmentalMetrics": [
+          {
+            "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalNoBiogenicMetric",
+            "A1toA3": 0.14460000000000001,
+            "BHoM_Guid": "71d9439e-61ea-4d01-ada0-c510cdd91cdd",
+            "Name": ""
+          },
+          {
+            "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeBiogenicMetric",
+            "A1toA3": 0.0,
+            "BHoM_Guid": "12a17dda-71d5-4fea-927e-b687c23e1d7f",
+            "Name": ""
+          },
+          {
+            "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalMetric",
+            "A1toA3": 0.14460000000000001,
+            "BHoM_Guid": "71d9439e-61ea-4d01-ada0-c510cdd91cdd",
+            "Name": ""
+          }
+        ],
+        "QuantityType": "Mass",
+        "BHoM_Guid": "7b9515a9-7bab-4e98-8542-3fa179c731e5",
+        "Name": "Ready-mix made concrete, buildings C30/37",
+        "Fragments": [
+          {
+            "_t": "BH.oM.LifeCycleAssessment.Fragments.EPDDensity",
+            "Density": 2350.0
+          },
+          {
+            "_t": "BH.oM.LifeCycleAssessment.Fragments.AdditionalEPDData",
+            "Description": "The compressive strength class follows EN 206:2013+A1:2016.",
+            "EndOfLifeTreatment": "",
+            "Id": "",
+            "IndustryStandards": [],
+            "Jurisdiction": "",
+            "LifeSpan": 50,
+            "Manufacturer": "",
+            "PlantName": "",
+            "PostalCode": 0,
+            "Publisher": "",
+            "ReferenceYear": 2021
+          }
+        ],
+        "_bhomVersion": "9.2"
+      }
+    ]
+  },
+  {
+    "_t": "BH.oM.Physical.Materials.Material",
+    "Name": "Structural Steel",
+    "Density": 7850.0,
+    "Properties": [
+      {
+        "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.EnvironmentalProductDeclaration",
+        "Type": "Sector",
+        "EnvironmentalMetrics": [
+          {
+            "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalNoBiogenicMetric",
+            "A1toA3": 2.3900000000000001,
+            "BHoM_Guid": "cd5d471b-23ae-4812-b418-b127152961f8",
+            "Name": ""
+          },
+          {
+            "_t": "BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalMetric",
+            "A1toA3": 2.3900000000000001,
+            "BHoM_Guid": "cd5d471b-23ae-4812-b418-b127152961f8",
+            "Name": ""
+          }
+        ],
+        "QuantityType": "Mass",
+        "BHoM_Guid": "a372a265-fd6e-4445-9c03-29ac36e25682",
+        "Name": "Fabricated hollow structural steel sections - AISC, STI",
+        "Fragments": [
+          {
+            "_t": "BH.oM.LifeCycleAssessment.Fragments.EPDDensity",
+            "Density": 7800.0
+          }
+        ],
+        "_bhomVersion": "9.2"
+      }
+    ]
+  }
+]
