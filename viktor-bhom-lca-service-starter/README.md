@@ -34,18 +34,16 @@ The VIKTOR entry point is `app/__init__.py`, which exports `Controller` from
 git clone <repo-url> C:\dev\bhom-lca\viktor-bhom-lca-service
 cd C:\dev\bhom-lca\viktor-bhom-lca-service
 
-powershell -ExecutionPolicy Bypass -File scripts\clone-bhom-repositories.ps1 `
-  -RootDirectory C:\dev\bhom-lca
+powershell -ExecutionPolicy Bypass -File scripts\install-bhom.ps1 -Install
 
 powershell -ExecutionPolicy Bypass -File scripts\build-gateway.ps1 `
   -RootDirectory C:\dev\bhom-lca
 ```
 
-The normal build compiles `LifeCycleAssessment_Engine` from source. MSBuild
-then publishes only the gateway's resolved BHoM/LCA dependency closure; it does
-not copy every DLL from the installed BHoM directory. Use
-`-SkipToolkitBuild` only when intentionally building against the installed
-LCA assemblies.
+The installer URL and SHA-256 are pinned to `BHoM_v9.2.beta.0.msi`. The build
+verifies the installed BHoM assembly version and lets MSBuild publish only the
+gateway's resolved BHoM/LCA dependency closure. It does not clone an independent
+LCA source branch or copy every DLL from the BHoM installation.
 
 Install the published gateway from an Administrator PowerShell session:
 
@@ -83,8 +81,8 @@ BHoMLcaGateway-1.0.0-win-x64.zip.sha256
 
 Create tag `v1.0.0` in the GitHub **Releases** interface and upload both files
 as release assets. The ZIP contains the dependency-closed gateway directory,
-installer, diagnostic command, worker configuration example and administrator
-README.
+pinned BHoM installer helper, gateway installer, diagnostic command, worker
+configuration example and administrator README.
 Do not upload `BHoMLcaGateway.exe` by itself.
 
 Keep the release private or marked as a prerelease until redistribution rights
@@ -96,10 +94,11 @@ The Windows Generic Worker administrator:
 
 1. Downloads the ZIP and checksum from the repository's **Releases** page.
 2. Extracts the complete ZIP.
-3. Opens PowerShell as Administrator in the extracted directory.
-4. Runs `powershell -ExecutionPolicy Bypass -File .\install.ps1`.
-5. Merges `config.example.yaml` into the Generic Worker configuration.
-6. Restarts the Generic Worker and runs `.\diagnose.ps1`.
+3. Runs `.\install-bhom.ps1 -Install` if pinned BHoM is not installed.
+4. Opens PowerShell as Administrator in the extracted directory.
+5. Runs `powershell -ExecutionPolicy Bypass -File .\install.ps1`.
+6. Merges `config.example.yaml` into the Generic Worker configuration.
+7. Restarts the Generic Worker and runs `.\diagnose.ps1`.
 
 After this one-time worker setup, VIKTOR web-app users do not download the ZIP
 or run the executable. They only upload their inputs and view the results in

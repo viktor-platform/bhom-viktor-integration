@@ -4,8 +4,8 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
     [string]$RuntimeIdentifier = "win-x64",
-    [string]$InstalledBHoMAssemblies = "C:\ProgramData\BHoM\Assemblies",
-    [switch]$SkipToolkitBuild
+    [string]$InstalledBHoMRoot = "C:\ProgramData\BHoM",
+    [string]$ExpectedBHoMAssemblyVersion = "9.0.0.0"
 )
 
 Set-StrictMode -Version Latest
@@ -27,66 +27,37 @@ if (-not (Test-Path $ServiceDirectory)) {
     }
 }
 
-if (-not (Test-Path $InstalledBHoMAssemblies)) {
-    throw "BHoM assemblies were not found at $InstalledBHoMAssemblies. Install a compatible BHoM release first."
+$AssembliesDirectory = Join-Path $InstalledBHoMRoot "Assemblies"
+if (-not (Test-Path $AssembliesDirectory)) {
+    throw "BHoM assemblies were not found at $AssembliesDirectory. Run scripts\install-bhom.ps1 -Install first."
 }
 
-$RequiredInstalledAssemblies = @(
+$RequiredAssemblies = @(
     "BHoM.dll",
     "BHoM_Engine.dll",
     "Dimensional_oM.dll",
     "LifeCycleAssessment_Engine.dll",
     "LifeCycleAssessment_oM.dll",
+    "Matter_Engine.dll",
     "Physical_oM.dll",
+    "Quantities_oM.dll",
     "Serialiser_Engine.dll"
 )
-foreach ($Name in $RequiredInstalledAssemblies) {
-    if (-not (Test-Path (Join-Path $InstalledBHoMAssemblies $Name))) {
+foreach ($Name in $RequiredAssemblies) {
+    $Path = Join-Path $AssembliesDirectory $Name
+    if (-not (Test-Path $Path)) {
         throw "Required BHoM assembly is missing: $Name"
     }
+
+    $Version = [System.Reflection.AssemblyName]::GetAssemblyName($Path).Version
+    if ($Version.ToString() -ne $ExpectedBHoMAssemblyVersion) {
+        throw "$Name has version $Version; expected $ExpectedBHoMAssemblyVersion from BHoM v9.2.beta.0."
+    }
 }
 
-$RuntimeDirectory = Join-Path $ServiceDirectory "gateway\runtime"
 $PublishDirectory = Join-Path $ServiceDirectory "gateway\publish\$RuntimeIdentifier"
-Remove-Item -Recurse -Force $RuntimeDirectory -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force $PublishDirectory -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $PublishDirectory | Out-Null
-
-$ReferenceDirectory = $InstalledBHoMAssemblies
-
-if (-not $SkipToolkitBuild) {
-    New-Item -ItemType Directory -Force -Path $RuntimeDirectory | Out-Null
-    $EngineProject = Join-Path $RootDirectory "external\LifeCycleAssessment_Toolkit\LifeCycleAssessment_Engine\LifeCycleAssessment_Engine.csproj"
-    if (-not (Test-Path $EngineProject)) {
-        throw "The LCA toolkit source was not found at $EngineProject. Run clone-bhom-repositories.ps1 or use -SkipToolkitBuild."
-    }
-
-    dotnet build $EngineProject `
-        --configuration $Configuration `
-        --property:OutputPath="$RuntimeDirectory\" `
-        --property:AppendTargetFrameworkToOutputPath=false `
-        --property:AppendRuntimeIdentifierToOutputPath=false
-    if ($LASTEXITCODE -ne 0) {
-        throw "The LifeCycleAssessment Engine build failed."
-    }
-
-    $GatewayReferences = @(
-        "BHoM.dll",
-        "Dimensional_oM.dll",
-        "LifeCycleAssessment_Engine.dll",
-        "LifeCycleAssessment_oM.dll",
-        "Physical_oM.dll",
-        "Serialiser_Engine.dll"
-    )
-    foreach ($Name in $GatewayReferences) {
-        $Destination = Join-Path $RuntimeDirectory $Name
-        if (-not (Test-Path $Destination)) {
-            Copy-Item (Join-Path $InstalledBHoMAssemblies $Name) $Destination
-        }
-    }
-
-    $ReferenceDirectory = $RuntimeDirectory
-}
 
 $GatewayProject = Join-Path $ServiceDirectory "gateway\src\BHoMLcaGateway\BHoMLcaGateway.csproj"
 dotnet publish $GatewayProject `
@@ -94,28 +65,28 @@ dotnet publish $GatewayProject `
     --runtime $RuntimeIdentifier `
     --self-contained false `
     --output $PublishDirectory `
-    --property:BHoMAssembliesDir="$ReferenceDirectory"
+    --property:BHoMAssembliesDir="$AssembliesDirectory"
 if ($LASTEXITCODE -ne 0) {
     throw "The gateway publish failed."
 }
 
-$DataSetSource = Join-Path $RootDirectory "external\LifeCycleAssessment_Toolkit\DataSets"
-if (Test-Path $DataSetSource) {
-    Copy-Item -Path $DataSetSource -Destination (Join-Path $PublishDirectory "DataSets") -Recurse -Force
+$DataSetSource = Join-Path $InstalledBHoMRoot "Datasets\LifeCycleAssessment"
+if (-not (Test-Path $DataSetSource)) {
+    throw "The installed BHoM LCA datasets were not found at $DataSetSource."
 }
-
-$RevisionManifest = Join-Path $RootDirectory "external-revisions.json"
-if (Test-Path $RevisionManifest) {
-    Copy-Item $RevisionManifest (Join-Path $PublishDirectory "external-revisions.json") -Force
-}
+$DataSetDestination = Join-Path $PublishDirectory "DataSets\LifeCycleAssessment"
+New-Item -ItemType Directory -Force -Path $DataSetDestination | Out-Null
+Copy-Item -Path (Join-Path $DataSetSource "*") `
+    -Destination $DataSetDestination `
+    -Recurse `
+    -Force
 
 $Gateway = Join-Path $PublishDirectory "BHoMLcaGateway.exe"
 if (-not (Test-Path $Gateway)) {
     throw "The gateway executable was not created at $Gateway."
 }
 
-# BHoM loads System.Drawing.Common which requires the Windows Desktop runtime.
-# dotnet publish emits a single-framework runtimeconfig; patch it to declare both frameworks.
+# BHoM loads System.Drawing.Common and requires the Windows Desktop runtime.
 $RuntimeConfig = Join-Path $PublishDirectory "BHoMLcaGateway.runtimeconfig.json"
 @'
 {
@@ -134,9 +105,10 @@ $RuntimeConfig = Join-Path $PublishDirectory "BHoMLcaGateway.runtimeconfig.json"
   }
 }
 '@ | Set-Content $RuntimeConfig -Encoding UTF8
-Write-Host "Patched runtimeconfig.json (WindowsDesktop + NETCore frameworks)"
 
-$DiagnosticDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("bhom-lca-diagnose-" + [Guid]::NewGuid().ToString("N"))
+$DiagnosticDirectory = Join-Path ([System.IO.Path]::GetTempPath()) (
+    "bhom-lca-diagnose-" + [Guid]::NewGuid().ToString("N")
+)
 New-Item -ItemType Directory -Force -Path $DiagnosticDirectory | Out-Null
 try {
     Push-Location $DiagnosticDirectory
@@ -144,13 +116,13 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "The published gateway diagnostic command failed."
     }
-    if (-not (Test-Path "runtime-manifest.json")) {
-        throw "The gateway diagnostic command did not create runtime-manifest.json."
-    }
 }
 finally {
     Pop-Location
     Remove-Item -Recurse -Force $DiagnosticDirectory -ErrorAction SilentlyContinue
 }
 
+$PublishedDllCount = (Get-ChildItem $PublishDirectory -Filter "*.dll").Count
 Write-Host "Gateway published to $PublishDirectory"
+Write-Host "Published managed DLLs: $PublishedDllCount"
+Write-Host "Pinned BHoM distribution: v9.2.beta.0 ($ExpectedBHoMAssemblyVersion)"

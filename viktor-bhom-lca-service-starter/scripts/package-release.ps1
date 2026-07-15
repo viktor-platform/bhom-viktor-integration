@@ -62,6 +62,8 @@ try {
         (Join-Path $PackageDirectory "config.example.yaml")
     Copy-Item (Join-Path $RepositoryRoot "worker\INSTALL.md") `
         (Join-Path $PackageDirectory "README.md")
+    Copy-Item (Join-Path $RepositoryRoot "scripts\install-bhom.ps1") `
+        (Join-Path $PackageDirectory "install-bhom.ps1")
 
     Push-Location $DiagnosticDirectory
     try {
