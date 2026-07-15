@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import unittest
 from types import SimpleNamespace
 
 import viktor as vkt
@@ -27,24 +28,27 @@ def sample_params() -> SimpleNamespace:
     )
 
 
-@mock_View(Controller)
-def test_webview_contains_model_audit_and_bhom_payload() -> None:
-    result = Controller().model_explorer(params=sample_params())
+class TestViews(unittest.TestCase):
+    @mock_View(Controller)
+    def test_webview_contains_model_audit_and_bhom_payload(self) -> None:
+        result = Controller().model_explorer(params=sample_params())
 
-    assert isinstance(result, vkt.WebResult)
-    assert "BHoM model audit" in result.html
-    assert "BH.oM.Physical.Elements.Wall" not in result.html
-    assert "MODEL_DATA_BASE64" not in result.html
+        self.assertIsInstance(result, vkt.WebResult)
+        self.assertIn("BHoM model audit", result.html)
+        self.assertNotIn("BH.oM.Physical.Elements.Wall", result.html)
+        self.assertNotIn("MODEL_DATA_BASE64", result.html)
+
+    @mock_View(Controller)
+    def test_metadata_view_returns_data_result(self) -> None:
+        result = Controller().metadata_view(params=sample_params())
+
+        self.assertIsInstance(result, vkt.DataResult)
+
+    def test_lca_handoff_download_is_available(self) -> None:
+        result = Controller().download_lca_handoff(params=sample_params())
+
+        self.assertIsInstance(result, vkt.DownloadResult)
 
 
-@mock_View(Controller)
-def test_metadata_view_returns_data_result() -> None:
-    result = Controller().metadata_view(params=sample_params())
-
-    assert isinstance(result, vkt.DataResult)
-
-
-def test_lca_handoff_download_is_available() -> None:
-    result = Controller().download_lca_handoff(params=sample_params())
-
-    assert isinstance(result, vkt.DownloadResult)
+if __name__ == "__main__":
+    unittest.main()
