@@ -5,7 +5,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from revit_connector.contracts import build_pull_request
+from app.contracts import build_pull_request
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,7 +21,7 @@ def test_pull_request_matches_local_schema() -> None:
         include_parameters=True,
         element_limit=2500,
     ).payload
-    schema = load_json("contracts/revit-pull-request.schema.json")
+    schema = load_json("app/schemas/revit-pull-request.schema.json")
 
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(request)
     assert request["operation"] == "pull_model_snapshot"
@@ -32,6 +32,6 @@ def test_pull_request_matches_local_schema() -> None:
 
 def test_metadata_fixture_matches_local_schema() -> None:
     metadata = load_json("samples/revit-metadata.json")
-    schema = load_json("contracts/revit-metadata.schema.json")
+    schema = load_json("app/schemas/revit-metadata.schema.json")
 
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(metadata)

@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from revit_connector.bhom_formatter import (
+from app.bhom_formatter import (
     build_lca_handoff,
     summarize_bhom_contract,
     summarize_snapshot,
 )
-from revit_connector.contracts import ContractError
-from revit_connector.sample_loader import load_bundled_sample
+from app.contracts import ContractError
+from app.sample_loader import load_bundled_sample
 
 ROOT = Path(__file__).resolve().parents[1]
 

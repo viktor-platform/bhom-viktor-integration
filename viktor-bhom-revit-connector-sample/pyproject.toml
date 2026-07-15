@@ -30,4 +30,4 @@ line-length = 88
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.setuptools.packages.find]
-include = ["revit_connector*"]
+include = ["app*"]

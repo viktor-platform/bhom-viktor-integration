@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import viktor as vkt
 from viktor.testing import mock_View
 
-from revit_connector.controller import Controller
+from app import Controller
 
 
 def sample_params() -> SimpleNamespace:
