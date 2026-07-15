@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from lca_service.contracts import (
+from app.contracts import (
     AnalysisRequest,
     ContractError,
     build_request,

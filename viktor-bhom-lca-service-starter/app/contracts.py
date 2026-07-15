@@ -9,7 +9,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-CONTRACT_DIRECTORY = Path(__file__).resolve().parents[1] / "contracts"
+CONTRACT_DIRECTORY = Path(__file__).resolve().parent / "schemas"
 TAKEOFF_TYPE = "BH.oM.Physical.Materials.GeneralMaterialTakeoff"
 MATERIAL_TYPE = "BH.oM.Physical.Materials.Material"
 ALLOWED_METRICS = frozenset({"ClimateChangeTotal"})

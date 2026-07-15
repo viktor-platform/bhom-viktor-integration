@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from lca_service.visualization import (
+from app.visualization import (
     aggregate_records,
     build_figure,
     records_to_dataframe,

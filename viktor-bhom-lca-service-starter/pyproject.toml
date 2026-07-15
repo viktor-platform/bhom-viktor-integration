@@ -33,4 +33,4 @@ line-length = 88
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.setuptools.packages.find]
-include = ["lca_service*"]
+include = ["app*"]

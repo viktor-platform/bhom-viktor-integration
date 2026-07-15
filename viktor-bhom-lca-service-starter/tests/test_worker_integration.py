@@ -10,8 +10,8 @@ from types import SimpleNamespace
 import viktor as vkt
 from viktor.testing import mock_GenericAnalysis
 
-from lca_service.controller import Controller
-from lca_service.worker_client import CACHE_VERSION, execute_worker
+from app.app import Controller
+from app.worker_client import CACHE_VERSION, execute_worker
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "samples"

@@ -1,7 +1,11 @@
 .venv/
+venv/
 .pytest_cache/
 .ruff_cache/
 gateway/
+samples/
+scripts/
 tests/
+worker/
 *.pyc
 __pycache__/
