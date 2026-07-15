@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:viktor-bhom-lca:normalized-result:1.0",
+  "title": "VIKTOR BHoM LCA normalized result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "status",
+    "project",
+    "summary",
+    "records",
+    "unmatched_materials",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "job_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "const": "completed"
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id",
+        "project_name",
+        "gross_floor_area_m2"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gross_floor_area_m2": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_kgco2e",
+        "total_tco2e",
+        "carbon_intensity_kgco2e_m2",
+        "record_count",
+        "unmatched_material_count"
+      ],
+      "properties": {
+        "total_kgco2e": {
+          "type": "number"
+        },
+        "total_tco2e": {
+          "type": "number"
+        },
+        "carbon_intensity_kgco2e_m2": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "record_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unmatched_material_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "material",
+          "environmental_product_declaration",
+          "metric",
+          "module",
+          "value",
+          "unit"
+        ],
+        "properties": {
+          "material": {
+            "type": "string"
+          },
+          "environmental_product_declaration": {
+            "type": "string"
+          },
+          "metric": {
+            "type": "string",
+            "minLength": 1
+          },
+          "module": {
+            "enum": [
+              "A1",
+              "A2",
+              "A3",
+              "A1toA3"
+            ]
+          },
+          "value": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "unmatched_materials": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "job_id": "e2bb16f4-bb1c-57b6-9beb-36efb1c58be6",
+  "analysis_profile": "general_environmental_results",
+  "takeoff_filename": "takeoff.bhom.json",
+  "template_materials_filename": "template-materials.bhom.json",
+  "prioritise_template_materials": true,
+  "metric_filters": [
+    "ClimateChangeTotal"
+  ],
+  "modules": [
+    "A1",
+    "A2",
+    "A3"
+  ],
+  "project": {
+    "project_id": "sample-office",
+    "project_name": "Sample Office",
+    "gross_floor_area_m2": 500.0
+  }
+}

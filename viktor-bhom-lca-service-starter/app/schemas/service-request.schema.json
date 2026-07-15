@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:viktor-bhom-lca:service-request:1.0",
+  "title": "VIKTOR BHoM LCA service request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_id",
+    "analysis_profile",
+    "takeoff_filename",
+    "template_materials_filename",
+    "prioritise_template_materials",
+    "metric_filters",
+    "modules",
+    "project"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "job_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "analysis_profile": {
+      "const": "general_environmental_results"
+    },
+    "takeoff_filename": {
+      "const": "takeoff.bhom.json"
+    },
+    "template_materials_filename": {
+      "const": "template-materials.bhom.json"
+    },
+    "prioritise_template_materials": {
+      "type": "boolean"
+    },
+    "metric_filters": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "const": "ClimateChangeTotal"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "A1",
+          "A2",
+          "A3",
+          "A1toA3"
+        ]
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id",
+        "project_name",
+        "gross_floor_area_m2"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gross_floor_area_m2": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "not": {
+        "properties": {
+          "modules": {
+            "allOf": [
+              {
+                "contains": {
+                  "const": "A1toA3"
+                }
+              },
+              {
+                "contains": {
+                  "enum": [
+                    "A1",
+                    "A2",
+                    "A3"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

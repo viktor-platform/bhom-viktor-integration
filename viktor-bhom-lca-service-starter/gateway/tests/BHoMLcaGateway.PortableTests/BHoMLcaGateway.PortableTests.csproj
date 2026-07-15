@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../src/BHoMLcaGateway/CommandLine.cs" Link="Gateway/CommandLine.cs" />
+    <Compile Include="../../src/BHoMLcaGateway/EventLog.cs" Link="Gateway/EventLog.cs" />
+    <Compile Include="../../src/BHoMLcaGateway/JsonIO.cs" Link="Gateway/JsonIO.cs" />
+    <Compile Include="../../src/BHoMLcaGateway/Models.cs" Link="Gateway/Models.cs" />
+    <Compile Include="../../src/BHoMLcaGateway/ModuleSelection.cs" Link="Gateway/ModuleSelection.cs" />
+    <Compile Include="../../src/BHoMLcaGateway/RuntimeManifestFactory.cs" Link="Gateway/RuntimeManifestFactory.cs" />
+  </ItemGroup>
+</Project>
