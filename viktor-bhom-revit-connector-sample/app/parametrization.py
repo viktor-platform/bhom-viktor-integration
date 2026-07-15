@@ -2,7 +2,8 @@ import viktor as vkt
 
 
 class Parametrization(vkt.Parametrization):
-    introduction = vkt.Text(
+    introduction = vkt.Section("Introduction")
+    introduction.description = vkt.Text(
         "# Revit 2025 → BHoM model gateway\n"
         "Pull a read-only model snapshot through a fixed Windows worker, inspect "
         "Revit metadata, and build the exact `GeneralMaterialTakeoff` payload used "
