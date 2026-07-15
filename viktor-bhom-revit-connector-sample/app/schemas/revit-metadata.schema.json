@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:viktor-bhom-revit:metadata:1.0",
+  "title": "Normalized Revit metadata for VIKTOR views",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "job_id", "source", "extraction", "elements"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "job_id": {"type": "string", "format": "uuid"},
+    "source": {
+      "type": "object",
+      "required": ["application", "revit_version", "document_name", "bhom_version", "mode"]
+    },
+    "extraction": {
+      "type": "object",
+      "required": ["read_only", "include_parameters", "include_material_takeoff", "include_geometry", "categories"]
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bhom_guid",
+          "bhom_type",
+          "name",
+          "category",
+          "revit_element_id",
+          "revit_unique_id",
+          "parameters",
+          "materials"
+        ],
+        "properties": {
+          "bhom_guid": {"type": "string", "format": "uuid"},
+          "bhom_type": {"type": "string", "pattern": "^BH\\.oM\\."},
+          "name": {"type": "string"},
+          "category": {"type": "string"},
+          "revit_element_id": {"type": "string"},
+          "revit_unique_id": {"type": "string"},
+          "parameters": {"type": "array"},
+          "materials": {"type": "array"}
+        }
+      }
+    }
+  }
+}

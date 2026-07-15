@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <AssemblyName>BHoMRevitGateway</AssemblyName>
+    <RootNamespace>BHoMRevitGateway</RootNamespace>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PublishSingleFile>false</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <BHoMAssembliesDir Condition="'$(BHoMAssembliesDir)' == ''">$(ProgramData)\BHoM\Assemblies</BHoMAssembliesDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" Version="8.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Adapter_oM">
+      <HintPath>$(BHoMAssembliesDir)\Adapter_oM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="BHoM">
+      <HintPath>$(BHoMAssembliesDir)\BHoM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="BHoM_Adapter">
+      <HintPath>$(BHoMAssembliesDir)\BHoM_Adapter.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="BHoM_Engine">
+      <HintPath>$(BHoMAssembliesDir)\BHoM_Engine.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Data_oM">
+      <HintPath>$(BHoMAssembliesDir)\Data_oM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Revit_Adapter">
+      <HintPath>$(BHoMAssembliesDir)\Revit_Adapter.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Revit_oM">
+      <HintPath>$(BHoMAssembliesDir)\Revit_oM.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Serialiser_Engine">
+      <HintPath>$(BHoMAssembliesDir)\Serialiser_Engine.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateBHoMReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Adapter_oM.dll')" Text="Missing Adapter_oM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\BHoM.dll')" Text="Missing BHoM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\BHoM_Adapter.dll')" Text="Missing BHoM_Adapter.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\BHoM_Engine.dll')" Text="Missing BHoM_Engine.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Data_oM.dll')" Text="Missing Data_oM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Revit_Adapter.dll')" Text="Missing Revit_Adapter.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Revit_oM.dll')" Text="Missing Revit_oM.dll in $(BHoMAssembliesDir)." />
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Serialiser_Engine.dll')" Text="Missing Serialiser_Engine.dll in $(BHoMAssembliesDir)." />
+  </Target>
+</Project>

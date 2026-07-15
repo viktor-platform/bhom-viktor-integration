@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "job_id": "2bb20e7b-590d-5a0e-a79c-1ee7d71f87b8",
+  "events": [
+    {
+      "level": "warning",
+      "code": "SAMPLE_DATA",
+      "message": "This snapshot and its EPD factors are synthetic test data."
+    }
+  ]
+}

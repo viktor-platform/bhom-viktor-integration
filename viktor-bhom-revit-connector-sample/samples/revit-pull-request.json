@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "job_id": "2bb20e7b-590d-5a0e-a79c-1ee7d71f87b8",
+  "operation": "pull_model_snapshot",
+  "revit_version": "2025",
+  "expected_document_name": "Sample Office 2025.rvt",
+  "filters": {
+    "categories": [
+      "Walls",
+      "Floors",
+      "Structural Columns"
+    ]
+  },
+  "options": {
+    "include_parameters": true,
+    "include_material_takeoff": true,
+    "include_geometry": false,
+    "element_limit": 2500
+  }
+}

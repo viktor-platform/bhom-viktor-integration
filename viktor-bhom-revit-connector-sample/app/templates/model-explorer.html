@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BHoM model audit</title>
+  <style>
+    :root {
+      --ink: #102a3a;
+      --blueprint: #173f58;
+      --waterline: #2d7f86;
+      --signal: #d6953b;
+      --paper: #edf3f4;
+      --panel: #f8fbfb;
+      --rule: #b8c9cd;
+      --muted: #58717c;
+      --white: #ffffff;
+      --display: "Arial Narrow", "Avenir Next Condensed", sans-serif;
+      --body: "Avenir Next", "Segoe UI", sans-serif;
+      --data: "SFMono-Regular", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(23, 63, 88, 0.035) 1px, transparent 1px),
+        linear-gradient(rgba(23, 63, 88, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 24px 24px;
+      font-family: var(--body);
+    }
+
+    button, input { font: inherit; }
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid rgba(214, 149, 59, 0.5);
+      outline-offset: 2px;
+    }
+
+    .sheet { min-height: 100vh; padding: clamp(18px, 3vw, 42px); }
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      border-top: 8px solid var(--blueprint);
+      border-bottom: 1px solid var(--ink);
+      padding: 24px 0 18px;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--waterline);
+      font-family: var(--data);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      max-width: 860px;
+      font-family: var(--display);
+      font-size: clamp(34px, 6vw, 76px);
+      font-stretch: condensed;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 0.93;
+      text-transform: uppercase;
+    }
+    .source-stamp {
+      border-left: 1px solid var(--ink);
+      padding-left: 18px;
+      font-family: var(--data);
+      font-size: 11px;
+      line-height: 1.7;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 18px 0;
+    }
+    .search {
+      width: min(480px, 100%);
+      border: 1px solid var(--rule);
+      border-radius: 0;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 12px 14px;
+    }
+    .count {
+      margin-left: auto;
+      color: var(--muted);
+      font-family: var(--data);
+      font-size: 12px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 220px minmax(310px, 1fr) minmax(280px, 0.78fr);
+      min-height: 560px;
+      border: 1px solid var(--ink);
+      background: rgba(248, 251, 251, 0.94);
+    }
+    .spine, .objects { border-right: 1px solid var(--ink); }
+    .column-title {
+      margin: 0;
+      border-bottom: 1px solid var(--rule);
+      padding: 13px 15px;
+      color: var(--muted);
+      font-family: var(--data);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .category {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 7px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border: 0;
+      border-bottom: 1px solid var(--rule);
+      background: transparent;
+      color: var(--ink);
+      padding: 0 14px 0 0;
+      text-align: left;
+      cursor: pointer;
+    }
+    .category::before { content: ""; align-self: stretch; background: var(--rule); }
+    .category span { padding: 13px 0; }
+    .category strong { font-family: var(--data); font-size: 11px; }
+    .category.active { background: var(--white); }
+    .category.active::before { background: var(--signal); }
+
+    .object-list { max-height: 620px; overflow: auto; }
+    .object-card {
+      width: 100%;
+      display: block;
+      border: 0;
+      border-bottom: 1px solid var(--rule);
+      background: transparent;
+      color: var(--ink);
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .object-card:hover, .object-card.active { background: var(--white); }
+    .object-card.active { box-shadow: inset 5px 0 0 var(--waterline); }
+    .object-name { display: block; font-weight: 700; line-height: 1.25; }
+    .object-type {
+      display: block;
+      margin-top: 8px;
+      overflow: hidden;
+      color: var(--waterline);
+      font-family: var(--data);
+      font-size: 10px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .chip {
+      border: 1px solid var(--rule);
+      padding: 3px 6px;
+      color: var(--muted);
+      font-family: var(--data);
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+    .chip.ready { border-color: var(--waterline); color: var(--waterline); }
+
+    .detail { padding: 20px; overflow: auto; }
+    .detail h2 {
+      margin: 3px 0 6px;
+      font-family: var(--display);
+      font-size: 30px;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .guid {
+      overflow-wrap: anywhere;
+      color: var(--muted);
+      font-family: var(--data);
+      font-size: 10px;
+    }
+    .detail-section { margin-top: 26px; }
+    .detail-section h3 {
+      margin: 0 0 8px;
+      border-bottom: 2px solid var(--blueprint);
+      padding-bottom: 7px;
+      font-family: var(--data);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      border-bottom: 1px dotted var(--rule);
+      padding: 8px 0;
+      font-size: 12px;
+    }
+    .row .value { font-family: var(--data); text-align: right; }
+    .empty { padding: 22px; color: var(--muted); }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 170px 1fr; }
+      .detail { grid-column: 1 / -1; border-top: 1px solid var(--ink); }
+      .objects { border-right: 0; }
+    }
+    @media (max-width: 620px) {
+      .masthead { grid-template-columns: 1fr; }
+      .source-stamp { border-left: 0; border-top: 1px solid var(--rule); padding: 12px 0 0; }
+      .workspace { display: block; }
+      .spine, .objects { border-right: 0; border-bottom: 1px solid var(--ink); }
+      .category-list { display: flex; overflow-x: auto; }
+      .category { min-width: 180px; border-right: 1px solid var(--rule); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .object-card { transition: background-color 120ms ease, box-shadow 120ms ease; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Read-only model audit / BHoM object graph</p>
+        <h1 id="document-title">Revit model</h1>
+      </div>
+      <div class="source-stamp" id="source-stamp"></div>
+    </header>
+
+    <div class="toolbar">
+      <label for="search" class="eyebrow">Find</label>
+      <input class="search" id="search" type="search" placeholder="Name, type, element ID, or material">
+      <span class="count" id="visible-count"></span>
+    </div>
+
+    <section class="workspace" aria-label="BHoM model explorer">
+      <nav class="spine" aria-label="Revit categories">
+        <h2 class="column-title">Category spine</h2>
+        <div class="category-list" id="categories"></div>
+      </nav>
+      <section class="objects" aria-label="BHoM elements">
+        <h2 class="column-title">BHoM elements</h2>
+        <div class="object-list" id="objects"></div>
+      </section>
+      <aside class="detail" id="detail" aria-live="polite"></aside>
+    </section>
+  </main>
+
+  <script>
+    const bytes = Uint8Array.from(atob("MODEL_DATA_BASE64"), character => character.charCodeAt(0));
+    const model = JSON.parse(new TextDecoder().decode(bytes));
+    let activeCategory = "All";
+    let activeGuid = model.elements[0]?.bhom_guid ?? null;
+    let query = "";
+
+    const categoryHost = document.getElementById("categories");
+    const objectHost = document.getElementById("objects");
+    const detailHost = document.getElementById("detail");
+
+    const text = (tag, value, className) => {
+      const node = document.createElement(tag);
+      node.textContent = value ?? "—";
+      if (className) node.className = className;
+      return node;
+    };
+
+    const categories = ["All", ...new Set(model.elements.map(item => item.category))];
+    const categoryCounts = Object.fromEntries(categories.map(category => [
+      category,
+      category === "All" ? model.elements.length : model.elements.filter(item => item.category === category).length,
+    ]));
+
+    document.getElementById("document-title").textContent = model.source.document_name;
+    document.getElementById("source-stamp").replaceChildren(
+      text("div", `REVIT / ${model.source.revit_version}`),
+      text("div", `BHOM / ${model.source.bhom_version}`),
+      text("div", `MODE / ${model.source.mode.toUpperCase()}`),
+    );
+
+    function filteredElements() {
+      return model.elements.filter(item => {
+        const categoryMatch = activeCategory === "All" || item.category === activeCategory;
+        const haystack = [
+          item.name,
+          item.bhom_type,
+          item.revit_element_id,
+          ...item.materials.map(material => material.name),
+        ].join(" ").toLowerCase();
+        return categoryMatch && haystack.includes(query);
+      });
+    }
+
+    function renderCategories() {
+      categoryHost.replaceChildren(...categories.map(category => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `category${activeCategory === category ? " active" : ""}`;
+        button.append(text("span", category), text("strong", String(categoryCounts[category])));
+        button.addEventListener("click", () => {
+          activeCategory = category;
+          const visible = filteredElements();
+          activeGuid = visible[0]?.bhom_guid ?? null;
+          render();
+        });
+        return button;
+      }));
+    }
+
+    function renderObjects() {
+      const visible = filteredElements();
+      document.getElementById("visible-count").textContent = `${visible.length} / ${model.elements.length} objects`;
+      if (!visible.length) {
+        objectHost.replaceChildren(text("p", "No elements match this filter.", "empty"));
+        detailHost.replaceChildren(text("p", "Choose another category or search term.", "empty"));
+        return;
+      }
+      if (!visible.some(item => item.bhom_guid === activeGuid)) activeGuid = visible[0].bhom_guid;
+      objectHost.replaceChildren(...visible.map(item => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `object-card${item.bhom_guid === activeGuid ? " active" : ""}`;
+        card.append(text("span", item.name, "object-name"));
+        card.append(text("span", item.bhom_type, "object-type"));
+        const chips = document.createElement("span");
+        chips.className = "chips";
+        chips.append(text("span", `ID ${item.revit_element_id}`, "chip"));
+        chips.append(text("span", item.materials.length ? "LCA ready" : "No takeoff", item.materials.length ? "chip ready" : "chip"));
+        card.append(chips);
+        card.addEventListener("click", () => { activeGuid = item.bhom_guid; render(); });
+        return card;
+      }));
+    }
+
+    function section(title, rows) {
+      const host = document.createElement("section");
+      host.className = "detail-section";
+      host.append(text("h3", title));
+      host.append(...rows.map(([label, value]) => {
+        const row = document.createElement("div");
+        row.className = "row";
+        row.append(text("span", label), text("span", value, "value"));
+        return row;
+      }));
+      return host;
+    }
+
+    function renderDetail() {
+      const item = model.elements.find(element => element.bhom_guid === activeGuid);
+      if (!item) return;
+      const materialRows = item.materials.map(material => [
+        material.name,
+        `${material.volume_m3.toFixed(3)} m³ / ${material.mass_kg.toFixed(1)} kg`,
+      ]);
+      const parameterRows = item.parameters.map(parameter => [
+        parameter.name,
+        `${parameter.value}${parameter.unit ? ` ${parameter.unit}` : ""}`,
+      ]);
+      detailHost.replaceChildren(
+        text("p", item.category, "eyebrow"),
+        text("h2", item.name),
+        text("p", item.bhom_guid, "guid"),
+        section("Identity", [
+          ["BHoM type", item.bhom_type],
+          ["Revit element ID", item.revit_element_id],
+          ["Revit unique ID", item.revit_unique_id],
+        ]),
+        section("Physical quantities / LCA", materialRows.length ? materialRows : [["Material takeoff", "Not available"]]),
+        section("RevitPulledParameters / metadata", parameterRows.length ? parameterRows : [["Parameters", "Not requested"]]),
+      );
+    }
+
+    function render() {
+      renderCategories();
+      renderObjects();
+      renderDetail();
+    }
+
+    document.getElementById("search").addEventListener("input", event => {
+      query = event.target.value.trim().toLowerCase();
+      activeGuid = filteredElements()[0]?.bhom_guid ?? null;
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>
