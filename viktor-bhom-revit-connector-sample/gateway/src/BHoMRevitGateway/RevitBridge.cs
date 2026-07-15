@@ -5,6 +5,7 @@ using BH.Adapter.Revit;
 using BH.oM.Adapters.Revit;
 using BH.oM.Adapters.Revit.Requests;
 using BH.oM.Adapters.Revit.Settings;
+using BH.oM.Base.Debugging;
 using BHoMSerialiser = BH.Engine.Serialiser.Convert;
 
 namespace BHoMRevitGateway;
@@ -60,6 +61,7 @@ public static class RevitBridge
         };
 
         List<object> pulledObjects = [];
+        List<string> adapterErrors = [];
         bool truncated = false;
         foreach (string category in request.Filters.Categories)
         {
@@ -67,14 +69,16 @@ public static class RevitBridge
                 "revit.category.started",
                 $"Pulling Revit category '{category}'."
             );
-            IEnumerable<object> categoryObjects = adapter.Pull(
+            BH.Engine.Base.Compute.ClearCurrentEvents();
+            List<object> categoryObjects = adapter.Pull(
                 new FilterByCategory
                 {
                     CategoryName = category,
-                    CaseSensitive = true,
+                    CaseSensitive = false,
                 },
                 actionConfig: pullConfig
-            );
+            ).ToList();
+            CaptureAdapterEvents(eventLog, adapterErrors, category);
 
             foreach (object item in categoryObjects)
             {
@@ -95,10 +99,14 @@ public static class RevitBridge
 
         if (pulledObjects.Count == 0)
         {
+            string details = adapterErrors.Count == 0
+                ? "The adapter did not report a detailed error."
+                : string.Join(" | ", adapterErrors.Distinct());
             throw new InvalidOperationException(
                 "The Revit listener returned no BHoM objects. Confirm that Revit "
                 + "2025 has an active document, the BHoM listener is activated, "
-                + "and the selected categories contain model elements."
+                + "and the selected categories contain model elements. "
+                + $"Adapter details: {details}"
             );
         }
 
@@ -149,6 +157,35 @@ public static class RevitBridge
             $"Created a snapshot containing {elements.Count} BHoM objects."
         );
         return request.JobId;
+    }
+
+    private static void CaptureAdapterEvents(
+        EventLog eventLog,
+        List<string> adapterErrors,
+        string category
+    )
+    {
+        foreach (Event bHoMEvent in BH.Engine.Base.Query.CurrentEvents())
+        {
+            string message = string.IsNullOrWhiteSpace(bHoMEvent.Message)
+                ? $"BHoM emitted {bHoMEvent.Type} while pulling '{category}'."
+                : bHoMEvent.Message.Trim();
+            string eventType = bHoMEvent.Type.ToString().ToLowerInvariant();
+
+            if (eventType.Contains("error"))
+            {
+                adapterErrors.Add($"{category}: {message}");
+                eventLog.Error("bhom.adapter.error", message);
+            }
+            else if (eventType.Contains("warning"))
+            {
+                eventLog.Warning("bhom.adapter.warning", message);
+            }
+            else
+            {
+                eventLog.Note("bhom.adapter.note", message);
+            }
+        }
     }
 
     private static string ConfirmActiveDocument(string? expectedDocumentName)

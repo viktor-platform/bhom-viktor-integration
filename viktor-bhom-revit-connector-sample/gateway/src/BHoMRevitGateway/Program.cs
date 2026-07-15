@@ -7,6 +7,7 @@ public static class Program
         CommandLineOptions? options = null;
         EventLog eventLog = new();
         string? jobId = null;
+        int exitCode;
 
         try
         {
@@ -18,26 +19,28 @@ public static class Program
                     "The Revit gateway runtime manifest was created."
                 );
                 WriteOperationalFiles(options, eventLog, jobId);
-                return 0;
+                exitCode = 0;
             }
-
-            jobId = RevitBridge.Run(options, eventLog);
-            WriteOperationalFiles(options, eventLog, jobId);
-            return 0;
+            else
+            {
+                jobId = RevitBridge.Run(options, eventLog);
+                WriteOperationalFiles(options, eventLog, jobId);
+                exitCode = 0;
+            }
         }
         catch (ArgumentException error)
         {
             Console.Error.WriteLine(error.Message);
             eventLog.Error("command.invalid", error.Message);
             WriteFailureFiles(options, eventLog, jobId);
-            return 2;
+            exitCode = 2;
         }
         catch (InvalidDataException error)
         {
             Console.Error.WriteLine(error.Message);
             eventLog.Error("input.invalid", error.Message);
             WriteFailureFiles(options, eventLog, jobId);
-            return 3;
+            exitCode = 3;
         }
         catch (Exception error)
         {
@@ -45,8 +48,14 @@ public static class Program
             Console.Error.WriteLine(message);
             eventLog.Error("revit.pull.failed", message);
             WriteFailureFiles(options, eventLog, jobId);
-            return 4;
+            exitCode = 4;
         }
+
+        // SocketLink_Tcp owns foreground listener threads and does not expose a
+        // shutdown API. Force a deterministic process boundary after all output
+        // artifacts have been written so the VIKTOR Generic Worker can complete.
+        Environment.Exit(exitCode);
+        return exitCode;
     }
 
     private static void WriteOperationalFiles(
