@@ -23,6 +23,7 @@ public static class Program
             }
             else
             {
+                BHoMAssemblyLoader.LoadObjectModelAssemblies(eventLog);
                 jobId = RevitBridge.Run(options, eventLog);
                 WriteOperationalFiles(options, eventLog, jobId);
                 exitCode = 0;

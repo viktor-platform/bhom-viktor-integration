@@ -10,6 +10,11 @@ The gateway targets .NET Framework 4.8 because the pinned BHoM v9.2 beta
 runtime dynamic dispatch. Running that adapter directly from a .NET 8 console
 host causes its internal `DataPackage` serialization to fall through to the
 unsupported-object path before a Revit request reaches the listener.
+Before opening the socket connection, the gateway also loads and indexes the
+bundled BHoM `*_oM.dll` assemblies. The normal BHoM UI does this during startup;
+the standalone gateway must do it explicitly so returned Revit objects resolve
+to concrete `Wall`, `Floor`, `Material`, and `Construction` types instead of
+fallback `CustomObject` instances.
 
 ## Why the worker belongs on the Revit machine
 
