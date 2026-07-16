@@ -27,6 +27,8 @@ localhost and performs a read-only pull.
 - A reusable `call_lca_service()` helper for the separately deployed carbon app.
 - JSON schemas and tests for the producer-side contract.
 
+![VIKTOR BHoM Revit connector app](assets/app.png)
+
 ## Architecture
 
 ```text
@@ -76,6 +78,8 @@ If reusing the environment from `../viktor-bhom-lca-service-starter`, pass that
 Python path to `ty` and `pytest` instead of creating a second environment.
 
 ## Connect Revit 2025
+
+![VIKTOR Revit worker](assets/viktor-worker.png)
 
 1. Install one compatible, pinned BHoM release and the Revit Toolkit build for
    Revit 2025 on the Windows workstation.
