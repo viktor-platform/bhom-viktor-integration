@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Review Revit takeoffs and generate BHoM LCA material templates"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+  "openpyxl>=3.1,<4",
   "viktor>=14.30,<15",
 ]
 

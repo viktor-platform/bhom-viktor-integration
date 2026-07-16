@@ -4,16 +4,19 @@ import viktor as vkt
 class Parametrization(vkt.Parametrization):
     introduction = vkt.Text(
         "# BHoM material template mapping\n"
-        "Enter the Revit material inventory, search the LCA datasets installed with "
-        "BHoM on the Windows worker, approve one EPD per material, and export the "
-        "typed template for the LCA app."
+        "Map each source material to an installed BHoM EPD and create a reusable "
+        "BHoM material template. The optional workflow handoff can then package "
+        "that template with the takeoff and project area for downstream processing."
     )
 
     takeoff_file = vkt.FileField(
-        "BHoM takeoff",
+        "BHoM takeoff (Optional)",
         file_types=[".json"],
         max_size=20_000_000,
-        description="Optional GeneralMaterialTakeoff JSON exported by the Revit app.",
+        description=(
+            "Optional: upload a GeneralMaterialTakeoff exported by the Revit app, "
+            "or leave it empty and use or edit the material table instead."
+        ),
     )
     br1 = vkt.LineBreak()
     dataset_scope = vkt.OptionField(
@@ -39,7 +42,10 @@ class Parametrization(vkt.Parametrization):
         default=0,
         suffix=" m²",
         num_decimals=2,
-        description="Passed through to the downstream LCA app.",
+        description=(
+            "Included only in the optional Workflow handoff for downstream "
+            "processing; it does not change the standalone material template."
+        ),
     )
 
     inventory_help = vkt.Text(
@@ -89,24 +95,18 @@ class Parametrization(vkt.Parametrization):
     )
 
     mapping_help = vkt.Text(
-        "## Mapping output\n"
-        "After the search finishes, open **Mapping**, approve one returned EPD per "
-        "source material, save the selections, and review **Validated template**."
+        "## Results and Excel export\n"
+        "**Mapping** chooses one installed dataset result per source material. "
+        "**Material template** remains the reusable standalone result, while "
+        "**Workflow handoff** remains the optional integration envelope. Export one "
+        "workbook containing the canonical material template, normalized takeoff, and "
+        "workflow handoff payloads."
     )
-    download_template = vkt.DownloadButton(
-        "Download BHoM material template",
-        method="download_template",
+    download_excel = vkt.DownloadButton(
+        "Export Excel",
+        method="download_excel",
     )
     br4 = vkt.LineBreak()
-    download_handoff = vkt.DownloadButton(
-        "Download LCA handoff",
-        method="download_handoff",
-    )
-    br5 = vkt.LineBreak()
-    download_takeoff = vkt.DownloadButton(
-        "Download normalized takeoff",
-        method="download_takeoff",
-    )
 
     takeoff_json = vkt.TextAreaField(
         "Takeoff JSON",

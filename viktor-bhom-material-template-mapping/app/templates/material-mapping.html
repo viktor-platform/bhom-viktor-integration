@@ -7,16 +7,14 @@
   <style>
     :root {
       color-scheme: light;
-      --ink: #17212b;
-      --muted: #647181;
-      --line: #dce2e8;
+      --ink: #171717;
+      --muted: #5f5f5f;
+      --line: #d8d8d8;
       --panel: #ffffff;
-      --canvas: #f4f6f8;
-      --accent: #176b5b;
-      --accent-soft: #e5f2ee;
-      --warning: #9a6200;
-      --warning-soft: #fff3d6;
-      --shadow: 0 10px 32px rgba(24, 38, 52, 0.08);
+      --canvas: #ffffff;
+      --surface: #f2f2f2;
+      --surface-strong: #dedede;
+      --shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
     }
     * { box-sizing: border-box; }
     body {
@@ -26,6 +24,10 @@
       background: var(--canvas);
     }
     button, input { font: inherit; }
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid #000000;
+      outline-offset: 2px;
+    }
     .shell { padding: 22px; min-height: 100vh; }
     .topbar {
       display: flex;
@@ -39,8 +41,8 @@
     .progress { min-width: 170px; text-align: right; }
     .progress strong { display: block; font-size: 24px; }
     .progress span { color: var(--muted); font-size: 12px; }
-    .bar { height: 5px; background: #e2e6ea; border-radius: 99px; overflow: hidden; margin-top: 7px; }
-    .bar > span { display: block; height: 100%; background: var(--accent); transition: width .2s ease; }
+    .bar { height: 5px; background: var(--surface-strong); border-radius: 99px; overflow: hidden; margin-top: 7px; }
+    .bar > span { display: block; height: 100%; background: #000000; transition: width .2s ease; }
     .workspace {
       display: grid;
       grid-template-columns: minmax(260px, 0.72fr) minmax(430px, 1.28fr);
@@ -60,7 +62,7 @@
     .material-list { padding: 8px; }
     .material {
       width: 100%;
-      border: 0;
+      border: 1px solid transparent;
       background: transparent;
       text-align: left;
       padding: 12px;
@@ -71,8 +73,8 @@
       gap: 7px 12px;
       color: var(--ink);
     }
-    .material:hover { background: #f4f7f8; }
-    .material.active { background: var(--accent-soft); }
+    .material:hover { background: #f5f5f5; }
+    .material.active { background: var(--surface); border-color: #7a7a7a; }
     .material-name { font-weight: 650; font-size: 13px; overflow-wrap: anywhere; }
     .material-meta { color: var(--muted); font-size: 11px; }
     .chip {
@@ -81,11 +83,12 @@
       font-weight: 700;
       letter-spacing: .02em;
       padding: 4px 7px;
+      border: 1px solid #8a8a8a;
       border-radius: 99px;
-      color: var(--warning);
-      background: var(--warning-soft);
+      color: #404040;
+      background: #ffffff;
     }
-    .chip.mapped { color: var(--accent); background: var(--accent-soft); }
+    .chip.mapped { color: #000000; background: var(--surface-strong); border-color: #000000; }
     .detail { display: flex; flex-direction: column; min-width: 0; }
     .source-card {
       display: grid;
@@ -102,12 +105,13 @@
     .search { padding: 14px 18px 9px; }
     .search input {
       width: 100%;
-      border: 1px solid #cbd3da;
+      border: 1px solid #a8a8a8;
       border-radius: 8px;
       padding: 10px 12px;
-      outline: none;
+      background: #ffffff;
+      color: var(--ink);
     }
-    .search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .search input:focus { border-color: #000000; box-shadow: 0 0 0 3px #e3e3e3; }
     .candidates { padding: 0 10px 12px; overflow: auto; flex: 1; }
     .candidate {
       display: grid;
@@ -115,13 +119,22 @@
       gap: 10px;
       align-items: start;
       padding: 12px 9px;
-      border-bottom: 1px solid #edf0f2;
+      border-bottom: 1px solid #e8e8e8;
       cursor: pointer;
     }
     .candidate:last-child { border-bottom: 0; }
-    .candidate:hover { background: #f8fafb; }
-    .candidate.selected { background: var(--accent-soft); border-radius: 8px; }
-    .candidate input { margin-top: 3px; accent-color: var(--accent); }
+    .candidate:hover { background: #f7f7f7; }
+    .candidate.selected {
+      background: #eeeeee;
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 2px #000000;
+    }
+    .candidate input {
+      width: 16px;
+      height: 16px;
+      margin-top: 3px;
+      accent-color: #000000;
+    }
     .candidate-name { font-weight: 650; font-size: 13px; }
     .candidate-sub { color: var(--muted); font-size: 11px; margin-top: 3px; }
     .impact { text-align: right; white-space: nowrap; }
@@ -134,23 +147,38 @@
       gap: 9px;
       padding: 13px 18px;
       border-top: 1px solid var(--line);
-      background: #fbfcfd;
+      background: #f7f7f7;
     }
     .actions button {
-      border: 1px solid #bcc6ce;
+      border: 1px solid #8a8a8a;
       border-radius: 8px;
-      background: white;
+      background: #ffffff;
       color: var(--ink);
       padding: 9px 13px;
       cursor: pointer;
       font-weight: 650;
       font-size: 12px;
     }
-    .actions button.primary { background: var(--accent); border-color: var(--accent); color: white; }
-    .actions button:disabled { opacity: .45; cursor: not-allowed; }
+    .actions button:hover:not(:disabled) { background: #e8e8e8; border-color: #5c5c5c; }
+    .actions button:disabled {
+      background: #e2e2e2;
+      border-color: #bdbdbd;
+      color: #666666;
+      opacity: 1;
+      cursor: not-allowed;
+    }
+    .actions button.primary { background: #000000; border-color: #000000; color: #ffffff; }
+    .actions button.primary:hover:not(:disabled) { background: #333333; border-color: #333333; }
+    .actions button.primary:disabled { background: #666666; border-color: #666666; color: #ffffff; }
     .save { margin-left: auto; }
-    .save-status { color: var(--muted); font-size: 11px; }
-    .source-note { padding: 9px 18px 14px; color: var(--muted); font-size: 10px; background: #fbfcfd; }
+    .save-status {
+      color: #333333;
+      border-left: 2px solid #777777;
+      padding-left: 8px;
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .source-note { padding: 9px 18px 14px; color: var(--muted); font-size: 10px; background: #f7f7f7; }
     @media (max-width: 820px) {
       .workspace { grid-template-columns: 1fr; }
       .source-card { grid-template-columns: 1fr 1fr; }
@@ -164,7 +192,7 @@
     <header class="topbar">
       <div>
         <h1>Material and EPD mapping</h1>
-        <p class="subtitle">Approve one EPD from the installed BHoM datasets for every Revit material.</p>
+        <p class="subtitle">Choose one EPD from the installed BHoM datasets for every Revit material.</p>
       </div>
       <div class="progress">
         <strong id="progress-count">0 / 0</strong>
@@ -186,7 +214,7 @@
         <div class="source-card">
           <div>
             <h3 id="source-name">Select a material</h3>
-            <div class="material-meta" id="current-selection">No catalogue record approved</div>
+            <div class="material-meta" id="current-selection">No catalogue record selected</div>
           </div>
           <div class="metric"><strong id="source-volume">—</strong><span>volume [m³]</span></div>
           <div class="metric"><strong id="source-density">—</strong><span>density [kg/m³]</span></div>
@@ -198,9 +226,8 @@
         <div class="candidates" id="candidate-list"></div>
         <div class="actions">
           <button id="clear-button" type="button">Clear mapping</button>
-          <button id="approve-button" class="primary" type="button">Approve selection</button>
-          <span class="save-status" id="save-status">Changes are not saved yet.</span>
-          <button id="save-button" class="primary save" type="button">Save to VIKTOR</button>
+          <span class="save-status" id="save-status">Selections saved.</span>
+          <button id="save-button" class="primary save" type="button">Save selections</button>
         </div>
         <div class="source-note" id="source-note"></div>
       </section>
@@ -220,7 +247,7 @@
     });
     const mappings = Object.assign({}, bootstrap.mappings);
     let activeIndex = 0;
-    let selectedCatalogId = null;
+    let editRevision = 0;
 
     const byId = Object.fromEntries(records.map(function (record) {
       return [record.catalog_id, record];
@@ -258,8 +285,9 @@
       return best;
     }
 
-    function markDirty(message) {
-      document.getElementById("save-status").textContent = message || "Unsaved changes";
+    function markDirty() {
+      editRevision += 1;
+      document.getElementById("save-status").textContent = "Unsaved changes.";
     }
 
     function renderProgress() {
@@ -280,7 +308,6 @@
         button.className = "material" + (index === activeIndex ? " active" : "");
         button.onclick = function () {
           activeIndex = index;
-          selectedCatalogId = mappings[row.material_name] || null;
           renderAll();
         };
 
@@ -302,14 +329,14 @@
     function renderSource() {
       const row = inventory[activeIndex];
       if (!row) return;
-      const approved = byId[mappings[row.material_name]];
+      const selected = byId[mappings[row.material_name]];
       document.getElementById("source-name").textContent = row.material_name;
       document.getElementById("source-volume").textContent = fmt(row.volume_m3, 3);
       document.getElementById("source-density").textContent = fmt(row.density_kg_m3, 1);
       document.getElementById("source-mass").textContent = fmt(row.mass_kg, 1);
-      document.getElementById("current-selection").textContent = approved
-        ? "Approved: " + approved.name
-        : "No catalogue record approved";
+      document.getElementById("current-selection").textContent = selected
+        ? "Selected: " + selected.name
+        : "No catalogue record selected";
     }
 
     function filteredRecords() {
@@ -345,15 +372,21 @@
       }
 
       matches.forEach(function (record) {
+        const row = inventory[activeIndex];
         const label = document.createElement("label");
-        label.className = "candidate" + (selectedCatalogId === record.catalog_id ? " selected" : "");
+        label.className = "candidate" +
+          (mappings[row.material_name] === record.catalog_id ? " selected" : "");
         const radio = document.createElement("input");
         radio.type = "radio";
         radio.name = "catalog-record";
-        radio.checked = selectedCatalogId === record.catalog_id;
+        radio.dataset.sourceMaterial = row.material_name;
+        radio.dataset.catalogId = record.catalog_id;
+        radio.checked = mappings[row.material_name] === record.catalog_id;
         radio.onchange = function () {
-          selectedCatalogId = record.catalog_id;
-          renderCandidates();
+          if (!radio.checked) return;
+          mappings[radio.dataset.sourceMaterial] = radio.dataset.catalogId;
+          markDirty();
+          renderAll();
         };
 
         const copy = document.createElement("div");
@@ -383,50 +416,44 @@
       });
     }
 
-    function approveSelection() {
-      const row = inventory[activeIndex];
-      if (!row || !selectedCatalogId) return;
-      mappings[row.material_name] = selectedCatalogId;
-      markDirty();
-      renderAll();
-    }
-
     function clearMapping() {
       const row = inventory[activeIndex];
       if (!row) return;
       delete mappings[row.material_name];
-      selectedCatalogId = null;
       markDirty();
       renderAll();
     }
 
-    function buildTemplates() {
-      return inventory.flatMap(function (row) {
-        const record = byId[mappings[row.material_name]];
-        if (!record) return [];
-        return [{
-          _t: "BH.oM.Physical.Materials.Material",
-          Name: row.material_name,
-          Density: Number(row.density_kg_m3 || record.density_kg_m3),
-          Properties: [JSON.parse(JSON.stringify(record.epd))]
-        }];
+    function synchronizeCheckedMappings() {
+      document.querySelectorAll(
+        'input[type="radio"][data-source-material][data-catalog-id]:checked'
+      ).forEach(function (radio) {
+        const sourceMaterial = radio.dataset.sourceMaterial;
+        const catalogId = radio.dataset.catalogId;
+        if (sourceMaterial && catalogId) {
+          mappings[sourceMaterial] = catalogId;
+        }
       });
     }
 
-    function saveToViktor() {
+    async function saveSelections() {
+      const button = document.getElementById("save-button");
       const status = document.getElementById("save-status");
-      status.textContent = "Saving…";
+      synchronizeCheckedMappings();
       const state = {schema_version: "1.0", mappings: mappings};
-      viktorSdk.sendParams({
-        mapping_state_json: JSON.stringify(state),
-        template_materials_json: JSON.stringify(buildTemplates())
-      }, true)
-        .then(function () {
-          status.textContent = "Saved. The validated template view can now refresh.";
-        })
-        .catch(function (error) {
-          status.textContent = "Save failed: " + error;
-        });
+      const saveRevision = editRevision;
+      button.disabled = true;
+      status.textContent = "Saving…";
+      try {
+        await viktorSdk.sendParams({mapping_state_json: JSON.stringify(state)}, true);
+        status.textContent = editRevision === saveRevision
+          ? "Selections saved."
+          : "Selections saved, but newer changes are unsaved.";
+      } catch (error) {
+        status.textContent = "Save failed: " + error;
+      } finally {
+        button.disabled = false;
+      }
     }
 
     function renderAll() {
@@ -434,22 +461,17 @@
       renderMaterials();
       renderSource();
       renderCandidates();
-      document.getElementById("approve-button").disabled = !selectedCatalogId;
       document.getElementById("clear-button").disabled =
         !inventory[activeIndex] || !mappings[inventory[activeIndex].material_name];
     }
 
     document.getElementById("catalog-search").addEventListener("input", renderCandidates);
-    document.getElementById("approve-button").addEventListener("click", approveSelection);
     document.getElementById("clear-button").addEventListener("click", clearMapping);
-    document.getElementById("save-button").addEventListener("click", saveToViktor);
+    document.getElementById("save-button").addEventListener("click", saveSelections);
     document.getElementById("source-note").textContent =
       (bootstrap.source.toolkit || "BHoM Library_Engine") + " · " +
       (bootstrap.source.library_path || "LifeCycleAssessment") + " · installed datasets · A1–A3 combined";
 
-    if (inventory.length) {
-      selectedCatalogId = mappings[inventory[0].material_name] || null;
-    }
     renderAll();
   </script>
 </body>

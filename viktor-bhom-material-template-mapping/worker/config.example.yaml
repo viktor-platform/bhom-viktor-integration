@@ -1,5 +1,8 @@
+# Merge this executable into the existing Generic Worker config.yaml.
+# Keep other executables; restart the worker after saving.
 executables:
   bhom_material_lookup:
+    # worker\install-gateway.ps1 installs the gateway at this path.
     path: 'C:\Services\BHoMMaterialLookupGateway\BHoMMaterialLookupGateway.exe'
     arguments:
       - 'query'
@@ -12,4 +15,6 @@ executables:
       - '--runtime-manifest'
       - 'runtime-manifest.json'
 
+# Two parallel jobs are safe because the Generic Worker isolates each job's process directory;
+# workingDirectoryPath is therefore unnecessary.
 maxParallelProcesses: 2

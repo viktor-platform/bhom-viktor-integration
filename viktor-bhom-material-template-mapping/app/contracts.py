@@ -200,6 +200,36 @@ def build_takeoff(inventory: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def build_handoff(
+    takeoff: dict[str, Any],
+    template_materials: list[dict[str, Any]],
+    catalogue: dict[str, Any],
+    gross_floor_area_m2: float,
+) -> dict[str, Any]:
+    return {
+        "schema_version": "1.0",
+        "target": {
+            "app": "bhom-lca-carbon-analysis",
+            "method_name": "run_analysis",
+        },
+        "source": {
+            "app": "bhom-material-template-mapping",
+            "catalogue": catalogue,
+        },
+        "params": {
+            "takeoff_json": json.dumps(
+                takeoff, separators=(",", ":"), ensure_ascii=False
+            ),
+            "template_materials_json": json.dumps(
+                template_materials, separators=(",", ":"), ensure_ascii=False
+            ),
+            "gross_floor_area_m2": gross_floor_area_m2,
+            "modules": ["A1toA3"],
+            "prioritise_template_materials": True,
+        },
+    }
+
+
 def parse_mapping_state(text: str | None) -> dict[str, str]:
     value = parse_json(text or "{}", label="mapping state")
     if not isinstance(value, dict):
