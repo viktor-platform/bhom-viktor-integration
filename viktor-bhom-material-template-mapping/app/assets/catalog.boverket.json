@@ -1,0 +1,4 @@
+{
+  "deprecated": true,
+  "message": "Material candidates come from the installed BHoM LifeCycleAssessment library through the Windows Generic Worker."
+}

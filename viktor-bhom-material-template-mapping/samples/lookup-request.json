@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "job_id": "22ab35b5-7c1d-48d5-a942-77ef033a321f",
+  "dataset_scope": "All installed LCA datasets",
+  "searches": [
+    {
+      "source_material": "Concrete C30/37",
+      "query": "ready mix concrete C30/37",
+      "count": 5
+    },
+    {
+      "source_material": "Structural Steel",
+      "query": "structural steel",
+      "count": 5
+    }
+  ]
+}

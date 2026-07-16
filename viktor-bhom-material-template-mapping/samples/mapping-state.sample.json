@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "mappings": {
+    "Concrete C30/37": "boverket-concrete-c30-37",
+    "Structural Steel": "boverket-structural-steel-primary"
+  }
+}

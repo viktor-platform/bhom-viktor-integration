@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>BHoMMaterialLookupGateway</AssemblyName>
+    <RootNamespace>BHoMMaterialLookupGateway</RootNamespace>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PublishSingleFile>false</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <BHoMAssembliesDir Condition="'$(BHoMAssembliesDir)' == ''">$(ProgramData)\BHoM\Assemblies</BHoMAssembliesDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BHoM"><HintPath>$(BHoMAssembliesDir)\BHoM.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="BHoM_Engine"><HintPath>$(BHoMAssembliesDir)\BHoM_Engine.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Data_Engine"><HintPath>$(BHoMAssembliesDir)\Data_Engine.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Data_oM"><HintPath>$(BHoMAssembliesDir)\Data_oM.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Library_Engine"><HintPath>$(BHoMAssembliesDir)\Library_Engine.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="LifeCycleAssessment_oM"><HintPath>$(BHoMAssembliesDir)\LifeCycleAssessment_oM.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Serialiser_Engine"><HintPath>$(BHoMAssembliesDir)\Serialiser_Engine.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Versioning_Engine"><HintPath>$(BHoMAssembliesDir)\Versioning_Engine.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Versioning_oM"><HintPath>$(BHoMAssembliesDir)\Versioning_oM.dll</HintPath><Private>true</Private></Reference>
+  </ItemGroup>
+  <Target Name="ValidateBHoMReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(BHoMAssembliesDir)\Library_Engine.dll')" Text="Install BHoM with the LifeCycleAssessment datasets before building." />
+  </Target>
+</Project>
