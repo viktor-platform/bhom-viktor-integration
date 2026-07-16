@@ -28,6 +28,8 @@ VIKTOR Desktop provides the secure connection between cloud apps and Windows exe
 
 Install and start the required Generic Worker on the Windows machine.
 
+![VIKTOR Desktop worker](viktor-bhom-revit-connector-sample/assets/viktor-worker.png)
+
 Each sample includes a YAML snippet that must be merged into that worker installation's `config.yaml`, preserving existing executable entries. Restart the worker after saving.
 
 - [VIKTOR BHoM Revit connector worker configuration](viktor-bhom-revit-connector-sample/worker/config.example.yaml)
