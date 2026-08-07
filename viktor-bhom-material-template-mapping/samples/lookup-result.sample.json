@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "job_id": "11111111-1111-1111-1111-111111111111",
+  "status": "completed",
+  "source": {
+    "dataset": "All installed LCA datasets",
+    "toolkit": "BHoM Library_Engine",
+    "library_path": "LifeCycleAssessment",
+    "dataset_count": 81,
+    "epd_count": 2273
+  },
+  "searches": [
+    {
+      "source_material": "Concrete C30/37",
+      "query": "ready mix concrete C30/37",
+      "candidates": [
+        {
+          "catalog_id": "7b9515a9-7bab-4e98-8542-3fa179c731e5",
+          "name": "Ready-mix made concrete, buildings C30/37",
+          "dataset_name": "Boverket",
+          "description": "Installed BHoM dataset fixture",
+          "manufacturer": "",
+          "plant_name": "",
+          "quantity_type": "Mass",
+          "density_kg_m3": 2350.0,
+          "a1toa3_kgco2e_per_declared_unit": 0.1446,
+          "match_score": 2.0,
+          "epd_json": "{\"_t\":\"BH.oM.LifeCycleAssessment.MaterialFragments.EnvironmentalProductDeclaration\",\"BHoM_Guid\":\"7b9515a9-7bab-4e98-8542-3fa179c731e5\",\"Name\":\"Ready-mix made concrete, buildings C30/37\",\"Type\":\"Sector\",\"QuantityType\":\"Mass\",\"EnvironmentalMetrics\":[{\"_t\":\"BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalMetric\",\"Indicators\":{\"A1toA3\":0.1446}}]}"
+        }
+      ]
+    },
+    {
+      "source_material": "Structural Steel",
+      "query": "structural steel",
+      "candidates": [
+        {
+          "catalog_id": "a372a265-fd6e-4445-9c03-29ac36e25682",
+          "name": "Fabricated hollow structural steel sections - AISC, STI",
+          "dataset_name": "BuroHappold_EC3_Steel",
+          "description": "Installed BHoM dataset fixture",
+          "manufacturer": "",
+          "plant_name": "",
+          "quantity_type": "Mass",
+          "density_kg_m3": 7800.0,
+          "a1toa3_kgco2e_per_declared_unit": 2.39,
+          "match_score": 3.4,
+          "epd_json": "{\"_t\":\"BH.oM.LifeCycleAssessment.MaterialFragments.EnvironmentalProductDeclaration\",\"BHoM_Guid\":\"a372a265-fd6e-4445-9c03-29ac36e25682\",\"Name\":\"Fabricated hollow structural steel sections - AISC, STI\",\"Type\":\"Product\",\"QuantityType\":\"Mass\",\"EnvironmentalMetrics\":[{\"_t\":\"BH.oM.LifeCycleAssessment.MaterialFragments.ClimateChangeTotalMetric\",\"Indicators\":{\"A1toA3\":2.39}}]}"
+        }
+      ]
+    }
+  ]
+}
