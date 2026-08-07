@@ -1,77 +1,64 @@
+"""Present the workflow agent chat and graph together in one VIKTOR app"""
+
 from typing import Any
 
 import viktor as vkt
+from agents.items import TResponseInputItem
+from dotenv import load_dotenv
 
 from agent.runner import workflow_agent_runtime
-from agent.state import load_state
 from agent.types import AgentContext
-from workflow_graph.state import build_canvas_state, save_canvas_state
+from workflow_graph.state import delete_canvas_state, load_canvas_state
+from workflow_graph.viewer import WorkflowViewer
+
+load_dotenv()
 
 
 class Parametrization(vkt.Parametrization):
-    title = vkt.Text(
-        """# BHoM LCA workflow agent
-Pull a Revit material takeoff, search installed BHoM EPD datasets, approve material mappings, and run life-cycle assessment."""
-    )
-    chat = vkt.Chat(
-        "",
-        method="call_llm",
-        flex=100,
-        first_message=(
-            "I can pull the Revit takeoff and search installed BHoM datasets. "
-            "I will ask you to approve EPD mappings before I run LCA."
-        ),
-    )
+    title = vkt.Text("""# BHoM Revit-to-LCA Workflow Agent
+Prepare validated handoffs between the Revit connector, material-template mapping, and LCA analysis applications.""")
+    chat = vkt.Chat("", method="call_llm", flex=100)
 
 
 class Controller(vkt.Controller):
     parametrization = Parametrization
 
-    def call_llm(self, params: Any, **kwargs: Any) -> Any:
+    def call_llm(
+        self,
+        params: Any,
+        entity_id: int | None = None,
+        workspace_id: int | None = None,
+        **kwargs: Any,
+    ) -> Any:
         if not params.chat:
             return None
+
         messages = params.chat.get_messages()
+        chat_history: list[TResponseInputItem] = [
+            {"role": message["role"], "content": message["content"]}
+            for message in messages
+        ]
         stream = workflow_agent_runtime.stream(
-            [
-                {"role": message["role"], "content": message["content"]}
-                for message in messages
-            ],
-            context=AgentContext(),
+            chat_history,
+            context=AgentContext(entity_id=entity_id, workspace_id=workspace_id),
+            show_tool_progress=True,
         )
         return vkt.ChatResult(params.chat, stream)
 
-    @vkt.WebView("Workflow graph", width=100)
-    def workflow_graph(self, params: Any, **kwargs: Any) -> Any:
-        save_canvas_state()
-        graph = build_canvas_state()
-        nodes = "".join(
-            f"<li><strong>{node.icon}</strong> {node.title}</li>"
-            for node in graph.nodes
-        )
-        return vkt.WebResult(
-            html=(
-                "<html><body style='font-family:Arial;padding:16px'>"
-                "<h2>BHoM Revit-to-LCA workflow</h2>"
-                f"<ol>{nodes}</ol>"
-                "<p>EPD mappings require explicit human approval.</p>"
-                "</body></html>"
-            )
-        )
+    @vkt.WebView("Workflow Graph", width=100)
+    def workflow_view(self, params: Any, **kwargs: Any) -> Any:
+        if not params.chat:
+            delete_canvas_state()
 
-    @vkt.DataView("Workflow status", duration_guess=1)
-    def workflow_status(self, params: Any, **kwargs: Any) -> Any:
-        state = load_state()
-        return vkt.DataResult(
-            vkt.DataGroup(
-                vkt.DataItem(
-                    "Revit handoff", "Ready" if state.revit_handoff else "Not prepared"
-                ),
-                vkt.DataItem(
-                    "Mapping handoff",
-                    "Ready" if state.mapping_handoff else "Not prepared",
-                ),
-                vkt.DataItem(
-                    "LCA handoff", "Ready" if state.lca_handoff else "Not prepared"
-                ),
+        canvas_state = load_canvas_state()
+        if canvas_state:
+            return vkt.WebResult(
+                html=WorkflowViewer(lambda: canvas_state).render_html()
             )
+
+        html = (
+            "<!doctype html><html><head><style>"
+            "body{margin:0;background:#fff;}"
+            "</style></head><body></body></html>"
         )
+        return vkt.WebResult(html=html)

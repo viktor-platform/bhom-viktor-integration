@@ -1,0 +1,48 @@
+[
+  {
+    "method_name": "summary_view",
+    "source": "entity_type.views",
+    "label": "Summary",
+    "view_type": "data"
+  },
+  {
+    "method_name": "analysis_chart",
+    "source": "entity_type.views",
+    "label": "Analysis chart",
+    "view_type": "plotly"
+  },
+  {
+    "method_name": "detail_table",
+    "source": "entity_type.views",
+    "label": "Detailed records",
+    "view_type": "table"
+  },
+  {
+    "method_name": "run_analysis",
+    "source": "parametrization",
+    "label": "Run and download normalized JSON",
+    "node_type": "download-button",
+    "path": "run_and_download"
+  },
+  {
+    "method_name": "download_raw_bhom",
+    "source": "parametrization",
+    "label": "Download raw BHoM results",
+    "node_type": "download-button",
+    "path": "download_raw"
+  },
+  {
+    "method_name": "download_events",
+    "source": "parametrization",
+    "label": "Download analysis events",
+    "node_type": "download-button",
+    "path": "download_events_button"
+  },
+  {
+    "method_name": "download_runtime_manifest",
+    "source": "parametrization",
+    "label": "Download runtime manifest",
+    "node_type": "download-button",
+    "path": "download_runtime_button"
+  }
+]

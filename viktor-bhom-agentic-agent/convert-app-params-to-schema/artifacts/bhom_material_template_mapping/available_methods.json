@@ -1,0 +1,34 @@
+[
+  {
+    "method_name": "mapping_view",
+    "source": "entity_type.views",
+    "label": "Mapping",
+    "view_type": "web"
+  },
+  {
+    "method_name": "template_view",
+    "source": "entity_type.views",
+    "label": "Material template",
+    "view_type": "data"
+  },
+  {
+    "method_name": "workflow_handoff_view",
+    "source": "entity_type.views",
+    "label": "Workflow handoff",
+    "view_type": "data"
+  },
+  {
+    "method_name": "search_bhom_database",
+    "source": "parametrization",
+    "label": "Search installed BHoM datasets",
+    "node_type": "set-params-button",
+    "path": "search_database"
+  },
+  {
+    "method_name": "download_excel",
+    "source": "parametrization",
+    "label": "Export Excel",
+    "node_type": "download-button",
+    "path": "download_excel"
+  }
+]

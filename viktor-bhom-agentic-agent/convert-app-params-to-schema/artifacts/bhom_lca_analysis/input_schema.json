@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "default": "sample-office"
+    },
+    "project_name": {
+      "type": "string",
+      "default": "Sample Office"
+    },
+    "gross_floor_area_m2": {
+      "type": "number",
+      "default": 500.0
+    },
+    "takeoff_json": {
+      "type": "string",
+      "default": ""
+    },
+    "template_materials_json": {
+      "type": "string",
+      "default": ""
+    },
+    "prioritise_template_materials": {
+      "type": "boolean",
+      "default": true
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "A1",
+        "A2",
+        "A3"
+      ]
+    },
+    "chart_type": {
+      "type": "string",
+      "default": "Stacked bar"
+    },
+    "group_by": {
+      "type": "string",
+      "default": "Material"
+    },
+    "takeoff_file": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "template_materials_file": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    }
+  },
+  "additionalProperties": false
+}

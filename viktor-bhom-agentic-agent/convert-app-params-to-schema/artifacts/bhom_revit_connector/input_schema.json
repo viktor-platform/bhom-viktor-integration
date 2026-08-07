@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "Walls",
+        "Floors",
+        "Structural Columns"
+      ]
+    },
+    "include_parameters": {
+      "type": "boolean",
+      "default": true
+    },
+    "element_limit": {
+      "type": "integer",
+      "default": 2500
+    }
+  },
+  "additionalProperties": false
+}

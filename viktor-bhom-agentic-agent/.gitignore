@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.env
+
+# Library files
+/output/
+.mypy_cache/
+venv/
+
+# Local OS/editor files
+.DS_Store
+
+# Codex scratch workspace
+temp/
+/artifacts/

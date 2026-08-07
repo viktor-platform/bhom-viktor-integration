@@ -1,13 +1,42 @@
 [project]
-name = "bhom-agentic-agent"
+name = "bhom-revit-lca-agent"
 version = "0.1.0"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
+dependencies = [
+    "openai-agents",
+    "pydantic",
+    "python-dotenv",
+    "requests",
+]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
+[dependency-groups]
+dev = [
+    "mypy",
+    "pytest",
+    "ruff==0.7.0",
+    "ty",
+]
 
-[tool.ty.environment]
-python-version = "3.13"
+[tool.mypy]
+python_version = "3.11"
+files = ["app.py", "agent", "workflow_graph", "tests"]
+strict = true
+warn_unreachable = true
+enable_error_code = ["possibly-undefined", "truthy-bool", "redundant-expr"]
+show_error_codes = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = ["viktor", "viktor.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "app"
+disallow_subclassing_any = false
+disallow_untyped_decorators = false
 
 [tool.ty.analysis]
 allowed-unresolved-imports = ["viktor", "viktor.**"]
+
+[tool.ty.environment]
+python-version = "3.11"

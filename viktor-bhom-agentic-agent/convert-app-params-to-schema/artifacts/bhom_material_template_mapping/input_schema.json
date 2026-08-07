@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "properties": {
+    "dataset_scope": {
+      "type": "string",
+      "default": "All installed LCA datasets"
+    },
+    "gross_floor_area_m2": {
+      "type": "integer",
+      "default": 0
+    },
+    "material_inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "material_name": {
+            "type": "string"
+          },
+          "search_query": {
+            "type": "string"
+          },
+          "volume_m3": {
+            "type": "number"
+          },
+          "density_kg_m3": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "default": [
+        {
+          "material_name": "Concrete C30/37",
+          "search_query": "ready mix concrete C30/37",
+          "volume_m3": 32.0,
+          "density_kg_m3": 2400.0
+        },
+        {
+          "material_name": "Structural Steel",
+          "search_query": "structural steel",
+          "volume_m3": 0.4,
+          "density_kg_m3": 7850.0
+        }
+      ]
+    },
+    "takeoff_json": {
+      "type": "string",
+      "default": ""
+    },
+    "lookup_results_json": {
+      "type": "string",
+      "default": ""
+    },
+    "mapping_state_json": {
+      "type": "string",
+      "default": "{\"schema_version\":\"1.0\",\"mappings\":{}}"
+    },
+    "template_materials_json": {
+      "type": "string",
+      "default": "[]"
+    },
+    "takeoff_file": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    }
+  },
+  "additionalProperties": false
+}

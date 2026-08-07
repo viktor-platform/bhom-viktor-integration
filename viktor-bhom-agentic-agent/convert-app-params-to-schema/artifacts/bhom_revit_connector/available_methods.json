@@ -1,0 +1,40 @@
+[
+  {
+    "method_name": "geometry_view",
+    "source": "entity_type.views",
+    "label": "Geometry",
+    "view_type": "geometry"
+  },
+  {
+    "method_name": "lca_data_view",
+    "source": "entity_type.views",
+    "label": "LCA data",
+    "view_type": "data"
+  },
+  {
+    "method_name": "metadata_view",
+    "source": "entity_type.views",
+    "label": "Model metadata",
+    "view_type": "data"
+  },
+  {
+    "method_name": "bhom_contract_view",
+    "source": "entity_type.views",
+    "label": "BHoM contract",
+    "view_type": "data"
+  },
+  {
+    "method_name": "download_takeoff",
+    "source": "parametrization",
+    "label": "Download BHoM takeoff",
+    "node_type": "download-button",
+    "path": "download_takeoff"
+  },
+  {
+    "method_name": "download_snapshot",
+    "source": "parametrization",
+    "label": "Download raw BHoM snapshot",
+    "node_type": "download-button",
+    "path": "download_snapshot"
+  }
+]
