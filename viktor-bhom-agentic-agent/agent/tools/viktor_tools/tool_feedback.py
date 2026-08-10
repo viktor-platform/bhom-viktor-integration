@@ -1,5 +1,3 @@
-"""Give the agent structured tool outcomes and actionable retry guidance"""
-
 import json
 from typing import Any
 

@@ -1,5 +1,3 @@
-"""Bridge asynchronous agent runs into the synchronous stream consumed by VIKTOR chat"""
-
 import asyncio
 import queue
 import threading

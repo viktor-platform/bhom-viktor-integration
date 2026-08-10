@@ -1,5 +1,3 @@
-"""Retrieve persisted computation output for an active workflow node"""
-
 from agents.tool_context import ToolContext
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 

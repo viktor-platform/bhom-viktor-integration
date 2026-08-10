@@ -1,5 +1,3 @@
-"""Resolve VIKTOR entities, jobs, and the active node-to-entity directory"""
-
 import json
 import os
 import re
@@ -48,7 +46,6 @@ JOB_RESULT_KEYS = (
     "geometry",
     "table",
     "download",
-    "optimization",
     "set_params",
 )
 FAILED_JOB_STATUSES = {

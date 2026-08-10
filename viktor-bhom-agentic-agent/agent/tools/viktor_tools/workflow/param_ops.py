@@ -1,5 +1,3 @@
-"""Read and safely mutate saved inputs for active workflow nodes"""
-
 from typing import Any, Literal, Protocol, cast
 
 from agents.tool_context import ToolContext

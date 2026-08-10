@@ -1,5 +1,3 @@
-"""Share request context and empty-input schemas across the agent and its tools"""
-
 from dataclasses import dataclass
 
 from pydantic import BaseModel, ConfigDict

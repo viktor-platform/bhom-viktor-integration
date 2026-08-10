@@ -1,12 +1,8 @@
-"""Fakes shared by BHoM workflow unit tests."""
-
 from copy import deepcopy
 from typing import Any
 
 
 class FakeNodeService:
-    """In-memory replacement for workflow entity and param services."""
-
     def __init__(
         self, directory: Any, params_by_node: dict[str, dict[str, Any]]
     ) -> None:

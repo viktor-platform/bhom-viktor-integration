@@ -1,5 +1,3 @@
-"""Embed graph state, styling, and interactions into a self-contained HTML view"""
-
 import json
 from collections.abc import Callable
 from pathlib import Path

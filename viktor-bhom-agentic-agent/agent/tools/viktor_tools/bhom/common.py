@@ -1,5 +1,3 @@
-"""Store run-scoped BHoM data and normalize handoff values."""
-
 import copy
 import json
 from typing import Any

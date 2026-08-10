@@ -1,5 +1,3 @@
-"""Execute VIKTOR app methods through the Python SDK compute adapter"""
-
 import os
 from typing import Any
 

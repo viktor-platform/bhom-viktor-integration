@@ -1,5 +1,3 @@
-"""Present the workflow agent chat and graph together in one VIKTOR app"""
-
 from typing import Any
 
 import viktor as vkt

@@ -1,5 +1,3 @@
-"""Define the graph, plan, and canvas state shared by storage and rendering"""
-
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field

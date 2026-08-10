@@ -1,5 +1,3 @@
-"""Propagate verified BHoM outputs through the Revit-to-LCA workflow."""
-
 import json
 from typing import Any
 

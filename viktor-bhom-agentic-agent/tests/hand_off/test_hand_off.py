@@ -1,5 +1,3 @@
-"""Offline contract tests for the BHoM Revit-to-LCA handoffs."""
-
 import asyncio
 import json
 from collections.abc import Callable, Coroutine

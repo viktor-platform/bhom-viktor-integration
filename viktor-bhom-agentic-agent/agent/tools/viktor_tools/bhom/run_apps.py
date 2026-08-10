@@ -1,5 +1,3 @@
-"""Run configured BHoM app methods and persist their selected outputs."""
-
 import json
 from typing import Any
 from urllib.parse import urlparse

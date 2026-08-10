@@ -1,5 +1,3 @@
-"""Let the agent compose a workflow DAG and maintain its visible execution plan"""
-
 import json
 from typing import Any, Literal
 

@@ -1,5 +1,3 @@
-"""Local-only fixtures for the BHoM workflow contract tests."""
-
 import json
 import sys
 from pathlib import Path
@@ -48,8 +46,6 @@ class FakeStoredFile:
 
 
 class FakeStorage:
-    """Minimal entity-scoped VIKTOR Storage fake with no external calls."""
-
     def __init__(self, values: dict[str, Any] | None = None) -> None:
         self.values = dict(values or {})
         self.calls: list[tuple[str, str]] = []

@@ -1,5 +1,3 @@
-"""Assemble graph, node, run, storage, and BHoM handoff tools."""
-
 from dataclasses import dataclass
 from importlib import import_module
 from typing import Any
