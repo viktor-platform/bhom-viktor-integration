@@ -106,6 +106,70 @@ def _takeoff_from_source(explicit: str | None, source: Any) -> str:
     return _validate_takeoff(candidate)
 
 
+def _positive_number(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if number > 0 else None
+
+
+def _material_density(material: dict[str, Any]) -> float | None:
+    direct = _positive_number(material.get("Density"))
+    if direct is not None:
+        return direct
+    fallback = None
+    properties = material.get("Properties")
+    if not isinstance(properties, list):
+        return None
+    for prop in properties:
+        if not isinstance(prop, dict):
+            continue
+        density = _positive_number(prop.get("Density"))
+        if density is None:
+            continue
+        if str(prop.get("_t", "")).endswith(".SolidMaterial"):
+            return density
+        fallback = fallback or density
+    return fallback
+
+
+def _material_inventory(takeoff_json: str) -> list[dict[str, Any]]:
+    takeoff = json.loads(takeoff_json)
+    grouped: dict[str, dict[str, Any]] = {}
+    for item in takeoff["MaterialTakeoffItems"]:
+        material = item["Material"]
+        name = str(material.get("Name") or "").strip()
+        if not name:
+            raise ValueError("Every Revit takeoff material must have a name.")
+        volume = float(item.get("Volume") or 0)
+        density = _material_density(material)
+        row = grouped.setdefault(
+            name.casefold(),
+            {
+                "material_name": name,
+                "search_query": name,
+                "volume_m3": 0.0,
+                "density_mass_kg": 0.0,
+                "density_volume_m3": 0.0,
+            },
+        )
+        row["volume_m3"] += volume
+        if density is not None:
+            row["density_mass_kg"] += density * volume
+            row["density_volume_m3"] += volume
+
+    inventory = []
+    for row in grouped.values():
+        density_volume = float(row.pop("density_volume_m3"))
+        density_mass = float(row.pop("density_mass_kg"))
+        row["density_kg_m3"] = (
+            density_mass / density_volume if density_volume > 0 else None
+        )
+        inventory.append(row)
+    return sorted(inventory, key=lambda row: str(row["material_name"]).casefold())
+
+
 def _set_and_verify(
     service: WorkflowEntityService,
     node_id: WorkflowNodeId,
@@ -163,20 +227,14 @@ async def handoff_revit_connector_to_material_template_mapping_func(
 
     try:
         takeoff_json = _takeoff_from_source(payload.takeoff_json, source)
-        gross_floor_area_m2 = payload.gross_floor_area_m2 or _value(
-            source, "gross_floor_area_m2"
-        )
-        if (
-            not isinstance(gross_floor_area_m2, (int, float))
-            or gross_floor_area_m2 <= 0
-        ):
-            raise ValueError(
-                "gross_floor_area_m2 must be provided and greater than zero."
-            )
-        patch = {
-            "takeoff_json": takeoff_json,
-            "gross_floor_area_m2": float(gross_floor_area_m2),
+        patch: dict[str, Any] = {
+            "material_inventory": _material_inventory(takeoff_json),
+            "lookup_results_json": "",
+            "mapping_state_json": '{"schema_version":"1.0","mappings":{}}',
+            "template_materials_json": "[]",
         }
+        if payload.gross_floor_area_m2 is not None:
+            patch["gross_floor_area_m2"] = payload.gross_floor_area_m2
         target = _set_and_verify(
             get_workflow_entity_service(),
             "material_template_mapping",
@@ -221,6 +279,7 @@ async def handoff_material_template_mapping_to_lca_analysis_func(
         )
 
     stored = try_read_json_from_storage(MATERIAL_TEMPLATE_MAPPING_STORAGE_KEY)
+    stored_takeoff = try_read_json_from_storage(REVIT_CONNECTOR_STORAGE_KEY)
     try:
         service = get_workflow_entity_service()
         mapping = service.resolve_entity("material_template_mapping")
@@ -263,7 +322,10 @@ async def handoff_material_template_mapping_to_lca_analysis_func(
         )
 
     try:
-        takeoff_json = _takeoff_from_source(payload.takeoff_json, source)
+        takeoff_json = _takeoff_from_source(
+            payload.takeoff_json,
+            stored_takeoff if stored_takeoff is not None else source,
+        )
         template_materials_json = _validate_templates(template_value)
         project_name = (
             payload.project_name or _value(source, "project_name") or "BHoM LCA Project"

@@ -18,11 +18,11 @@
   </workflow_rules>
   <manual_steps>
     <step node="revit_connector">If the Revit model or connector must be prepared manually, ask the user to open the Revit Connector URL, choose categories, confirm include_parameters and element_limit, save or refresh the result, and tell the agent when it is ready. Then call get_params_in_node and run_revit_connector.</step>
-    <step node="material_template_mapping">After the Revit handoff, ask the user to open the Material Template Mapping URL when human review is required, search the installed BHoM datasets, approve one EPD for every material, save the mapping results, and tell the agent when approval is complete. Then call get_params_in_node and run_material_template_mapping.</step>
+    <step node="material_template_mapping">After the Revit handoff copies the visible material_inventory table, run search_bhom_database through apply_set_params_method_in_node. Do not send takeoff_json to this app. Then ask the user to open the Material Template Mapping URL, approve one EPD for every material in the Mapping WebView, save the selections, and tell the agent when approval is complete. Then call get_params_in_node and run_material_template_mapping.</step>
     <step node="lca_analysis">After the approved mapping handoff, run_lca_analysis. If the LCA app reports that its worker or inputs require manual setup, ask the user to open the LCA URL, save the required setup or start the worker, and tell the agent when it is ready; then call get_params_in_node and retry.</step>
   </manual_steps>
   <handoff_rules>
-    <rule>Run run_revit_connector to store the BHoM GeneralMaterialTakeoff, then call handoff_revit_connector_to_material_template_mapping with gross_floor_area_m2 when it is not present in stored output.</rule>
+    <rule>Run run_revit_connector to store the BHoM GeneralMaterialTakeoff, then call handoff_revit_connector_to_material_template_mapping. Replace the material inventory table from the takeoff, preserve gross_floor_area_m2 as a user input, and clear stale lookup and mapping state.</rule>
     <rule>Do not proceed past material_template_mapping until the user has explicitly approved and saved the mappings.</rule>
     <rule>Run run_material_template_mapping to store the approved workflow handoff, then call handoff_material_template_mapping_to_lca_analysis.</rule>
     <rule>The LCA handoff must contain takeoff_json, template_materials_json, project_id, project_name, gross_floor_area_m2, and modules. Default modules are A1, A2, and A3.</rule>

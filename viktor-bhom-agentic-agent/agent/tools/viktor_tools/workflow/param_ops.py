@@ -198,6 +198,20 @@ def _extract_set_params_patch(result: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def _set_params_method_inputs(
+    node_id: WorkflowNodeId,
+    method_name: str,
+    saved_params: dict[str, Any],
+) -> dict[str, Any]:
+    if node_id == "material_template_mapping" and method_name == "search_bhom_database":
+        return {
+            key: saved_params[key]
+            for key in ("dataset_scope", "material_inventory")
+            if key in saved_params
+        }
+    return saved_params
+
+
 def _target_metadata(target: WorkflowRunEntity) -> dict[str, Any]:
     saved_params_are_shared = target.saved_params_are_shared
     metadata: dict[str, Any] = {
@@ -254,6 +268,7 @@ def _run_method(
     compute_client: ViktorSdkComputeClient | None,
     target: WorkflowRunEntity,
     method_name: str,
+    method_type: str | None,
     params: dict[str, Any],
     timeout: int | None,
 ) -> dict[str, Any]:
@@ -272,6 +287,7 @@ def _run_method(
         workspace_id=target.workspace_id,
         entity_id=target.entity_id,
         method_name=method_name,
+        method_type=method_type,
         params=params,
         editor_session=_try_create_editor_session(rest_client, target),
         timeout=timeout,
@@ -385,7 +401,12 @@ class WorkflowNodeParamService:
             compute_client=self.compute_client,
             target=target,
             method_name=payload.method_name,
-            params=current_params,
+            method_type=str(method.get("node_type") or "") or None,
+            params=_set_params_method_inputs(
+                payload.node_id,
+                payload.method_name,
+                current_params,
+            ),
             timeout=payload.timeout,
         )
         patch = _extract_set_params_patch(result)

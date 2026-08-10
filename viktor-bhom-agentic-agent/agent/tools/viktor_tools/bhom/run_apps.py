@@ -2,6 +2,7 @@
 
 import json
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 from agents.tool_context import ToolContext
@@ -111,7 +112,9 @@ def _download_json(selected: Any, client: ViktorRestEntityClient | None) -> Any:
     url = selected.get("url")
     if not isinstance(url, str) or not url:
         return selected
-    headers = client.auth_headers if client else {}
+    headers = {}
+    if client and urlparse(url).netloc == urlparse(client.api_base).netloc:
+        headers = client.auth_headers
     response = requests.get(url, headers=headers, timeout=(5.0, 60.0))
     response.raise_for_status()
     try:

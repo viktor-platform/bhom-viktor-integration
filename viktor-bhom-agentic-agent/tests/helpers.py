@@ -10,7 +10,7 @@ class FakeNodeService:
     def __init__(
         self, directory: Any, params_by_node: dict[str, dict[str, Any]]
     ) -> None:
-        self.client = None
+        self.client: Any = None
         self.directory = directory
         self.params_by_node = deepcopy(params_by_node)
         self.saved_messages: list[str] = []

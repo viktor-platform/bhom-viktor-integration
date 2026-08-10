@@ -9,10 +9,11 @@ from typing import Any, cast
 import pytest
 
 from agent.tools.registry import get_tools
-from agent.tools.viktor_tools.bhom import handoffs
+from agent.tools.viktor_tools.bhom import handoffs, run_apps
 from agent.tools.viktor_tools.workflow import result_ops
 from agent.tools.viktor_tools.workflow.entity_ops import WorkflowAppRegistry
 from agent.tools.viktor_tools.workflow.param_ops import (
+    ApplySetParamsMethodInNodeArgs,
     GetParamsInNodeArgs,
     SetParamsInNodeArgs,
     WorkflowNodeParamService,
@@ -110,7 +111,11 @@ def test_revit_stored_takeoff_is_handed_to_mapping(
         {
             "revit_connector": {},
             "material_template_mapping": {
-                "dataset_scope": "All installed LCA datasets"
+                "dataset_scope": "All installed LCA datasets",
+                "gross_floor_area_m2": 750.0,
+                "lookup_results_json": "stale lookup",
+                "mapping_state_json": '{"schema_version":"1.0","mappings":{"old":"epd"}}',
+                "template_materials_json": "[{}]",
             },
             "lca_analysis": {},
         },
@@ -118,7 +123,6 @@ def test_revit_stored_takeoff_is_handed_to_mapping(
     storage = {
         REVIT_STORAGE_KEY: {
             "takeoff_json": takeoff_json,
-            "gross_floor_area_m2": 500.0,
         }
     }
     monkeypatch.setattr(handoffs, "get_workflow_entity_service", lambda: service)
@@ -135,8 +139,18 @@ def test_revit_stored_takeoff_is_handed_to_mapping(
     assert json.loads(result)["status"] == "completed"
     assert service.params_by_node["material_template_mapping"] == {
         "dataset_scope": "All installed LCA datasets",
-        "takeoff_json": takeoff_json,
-        "gross_floor_area_m2": 500.0,
+        "gross_floor_area_m2": 750.0,
+        "material_inventory": [
+            {
+                "material_name": "Concrete C30/37",
+                "search_query": "Concrete C30/37",
+                "volume_m3": 12.5,
+                "density_kg_m3": 2400.0,
+            }
+        ],
+        "lookup_results_json": "",
+        "mapping_state_json": '{"schema_version":"1.0","mappings":{}}',
+        "template_materials_json": "[]",
     }
 
 
@@ -156,14 +170,16 @@ def test_approved_mapping_is_handed_to_lca(
         },
     )
     storage = {
+        REVIT_STORAGE_KEY: {
+            "takeoff_json": takeoff_json,
+        },
         MAPPING_STORAGE_KEY: {
             "approved": True,
-            "takeoff_json": takeoff_json,
             "template_materials_json": template_materials_json,
             "project_id": "sample-office",
             "project_name": "Sample Office",
             "gross_floor_area_m2": 500.0,
-        }
+        },
     }
     monkeypatch.setattr(handoffs, "get_workflow_entity_service", lambda: service)
     monkeypatch.setattr(
@@ -236,6 +252,60 @@ def test_set_and_get_node_params_deep_merge_with_readback() -> None:
     }
 
 
+def test_worker_search_uses_set_params_button_method_type() -> None:
+    class RestClient:
+        def __init__(self) -> None:
+            self.method_type: str | None = None
+            self.input_keys: list[str] = []
+
+        def create_editor_session(self, **kwargs: Any) -> str:
+            return "editor-session"
+
+        def run_entity_method(self, **kwargs: Any) -> dict[str, Any]:
+            self.method_type = kwargs.get("method_type")
+            self.input_keys = sorted(kwargs.get("params", {}))
+            return {
+                "set_params": {
+                    "lookup_results_json": '{"status":"completed"}',
+                }
+            }
+
+    service = FakeNodeService(
+        _directory(),
+        {
+            "revit_connector": {},
+            "material_template_mapping": {
+                "dataset_scope": "All installed LCA datasets",
+                "material_inventory": [
+                    {
+                        "material_name": "Steel",
+                        "search_query": "Steel",
+                        "volume_m3": 1.0,
+                        "density_kg_m3": None,
+                    }
+                ],
+                "takeoff_json": "hidden Revit JSON",
+                "mapping_state_json": "saved mapping state",
+            },
+            "lca_analysis": {},
+        },
+    )
+    client = RestClient()
+    service.client = client
+
+    result = WorkflowNodeParamService(entity_service=service).apply_set_params_method(
+        ApplySetParamsMethodInNodeArgs(
+            node_id="material_template_mapping",
+            method_name="search_bhom_database",
+            confirm=True,
+        )
+    )
+
+    assert client.method_type == "set-params-button"
+    assert client.input_keys == ["dataset_scope", "material_inventory"]
+    assert result["readback_verified"] is True
+
+
 def test_get_result_from_node_reads_workflow_storage(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -266,3 +336,46 @@ def test_get_result_from_node_reads_workflow_storage(
 
     assert response["status"] == "completed"
     assert response["result"] == stored_result
+
+
+def test_presigned_download_does_not_receive_viktor_bearer_header(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed_headers: dict[str, str] = {}
+
+    class Response:
+        text = '{"status":"ok"}'
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, str]:
+            return {"status": "ok"}
+
+    def get(
+        url: str,
+        *,
+        headers: dict[str, str],
+        timeout: tuple[float, float],
+    ) -> Response:
+        observed_headers.update(headers)
+        assert url.startswith("https://viktor-storage-eu1.s3.amazonaws.com/")
+        assert timeout == (5.0, 60.0)
+        return Response()
+
+    monkeypatch.setattr(
+        "agent.tools.viktor_tools.bhom.run_apps.requests.get",
+        get,
+    )
+    client = SimpleNamespace(
+        api_base="https://demo.viktor.ai/api",
+        auth_headers={"Authorization": "Bearer secret"},
+    )
+
+    result = run_apps._download_json(
+        {"url": "https://viktor-storage-eu1.s3.amazonaws.com/tmp/result.json"},
+        cast(Any, client),
+    )
+
+    assert result == {"status": "ok"}
+    assert observed_headers == {}
