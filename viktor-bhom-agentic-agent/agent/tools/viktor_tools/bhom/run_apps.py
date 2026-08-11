@@ -78,8 +78,17 @@ def _execute(
     timeout: int | None,
 ) -> tuple[dict[str, Any], str]:
     if target.entity_mode != "existing_entity" and target.created_for_run:
+        compute = ViktorSdkComputeClient()
+        if target.pre_run_method_name:
+            compute.compute_method(
+                workspace_id=target.workspace_id,
+                entity_id=target.entity_id,
+                method_name=target.pre_run_method_name,
+                params=params,
+                timeout=timeout,
+            )
         return (
-            ViktorSdkComputeClient().compute_method(
+            compute.compute_method(
                 workspace_id=target.workspace_id,
                 entity_id=target.entity_id,
                 method_name=target.method_name,
@@ -90,13 +99,25 @@ def _execute(
         )
 
     client = service.client or ViktorRestEntityClient()
+    editor_session = _try_editor_session(client, target)
+    if target.pre_run_method_name:
+        client.run_entity_method(
+            workspace_id=target.workspace_id,
+            entity_id=target.entity_id,
+            method_name=target.pre_run_method_name,
+            params=params,
+            editor_session=editor_session,
+            timeout=timeout,
+            max_poll_seconds=float(timeout or 300),
+        )
     return (
         client.run_entity_method(
             workspace_id=target.workspace_id,
             entity_id=target.entity_id,
             method_name=target.method_name,
+            method_type=target.method_type,
             params=params,
-            editor_session=_try_editor_session(client, target),
+            editor_session=editor_session,
             timeout=timeout,
             max_poll_seconds=float(timeout or 300),
         ),

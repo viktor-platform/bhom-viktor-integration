@@ -81,6 +81,7 @@ class WorkflowAppTemplate(BaseModel):
     workspace_id: int
     sibling_entity_id: int
     method_name: str
+    method_type: str | None = None
     result_key: str
     storage_key: str
     icon: str
@@ -102,6 +103,7 @@ class WorkflowRunEntity(BaseModel):
     entity_name: str
     url: str
     method_name: str
+    method_type: str | None = None
     result_key: str
     storage_key: str
     icon: str
@@ -193,11 +195,13 @@ class WorkflowAppRegistry:
                     workspace_id=3424,
                     sibling_entity_id=14972,
                     method_name="download_takeoff",
+                    method_type="download-button",
+                    pre_run_method_name="lca_data_view",
                     result_key="download",
                     storage_key=REVIT_CONNECTOR_STORAGE_KEY,
                     icon="RVT",
                     icon_bg="#dbeafe",
-                    entity_mode="existing_entity",
+                    entity_mode="clone_sibling",
                     depends_on=[],
                 ),
                 "material_template_mapping": WorkflowAppTemplate(
@@ -211,7 +215,7 @@ class WorkflowAppRegistry:
                     storage_key=MATERIAL_TEMPLATE_MAPPING_STORAGE_KEY,
                     icon="MAP",
                     icon_bg="#dcfce7",
-                    entity_mode="existing_entity",
+                    entity_mode="clone_sibling",
                     depends_on=["revit_connector"],
                 ),
                 "lca_analysis": WorkflowAppTemplate(
@@ -221,11 +225,12 @@ class WorkflowAppRegistry:
                     workspace_id=3423,
                     sibling_entity_id=14973,
                     method_name="run_analysis",
+                    method_type="download-button",
                     result_key="download",
                     storage_key=LCA_ANALYSIS_STORAGE_KEY,
                     icon="LCA",
                     icon_bg="#ede9fe",
-                    entity_mode="existing_entity",
+                    entity_mode="clone_sibling",
                     depends_on=["material_template_mapping"],
                 ),
             }
@@ -378,6 +383,7 @@ class ViktorRestEntityClient:
                 workspace_id=template.workspace_id, entity_id=created.id
             ),
             method_name=template.method_name,
+            method_type=template.method_type,
             result_key=template.result_key,
             storage_key=template.storage_key,
             icon=template.icon,
@@ -413,6 +419,7 @@ class ViktorRestEntityClient:
                 workspace_id=template.workspace_id, entity_id=template.sibling_entity_id
             ),
             method_name=template.method_name,
+            method_type=template.method_type,
             result_key=template.result_key,
             storage_key=template.storage_key,
             icon=template.icon,
@@ -435,19 +442,7 @@ class ViktorRestEntityClient:
         if template.entity_mode == "existing_entity":
             return self.bind_existing_entity_from_template(template=template)
 
-        try:
-            return self.create_sibling_from_template(
-                template=template, run_name=run_name
-            )
-        except RuntimeError as exc:
-            return self.bind_existing_entity_from_template(
-                template=template,
-                resolution="fallback_existing",
-                resolution_warning=(
-                    "Could not create a fresh sibling entity, so this node was bound to the "
-                    f"configured existing entity instead. Original error: {exc}"
-                ),
-            )
+        return self.create_sibling_from_template(template=template, run_name=run_name)
 
     def set_entity_params(
         self,

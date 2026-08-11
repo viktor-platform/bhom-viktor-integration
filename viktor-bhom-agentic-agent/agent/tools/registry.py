@@ -50,7 +50,7 @@ GRAPH_TOOL_SPECS = (
 BHOM_TOOL_SPECS = (
     ToolSpec(
         "create_workflow_entity_directory",
-        "Resolve the three deployed BHoM node entities and publish their graph.",
+        "Create fresh sibling entities for all three BHoM nodes and publish their graph.",
         "agent.tools.viktor_tools.workflow.entity_ops",
         "CreateWorkflowEntityDirectoryArgs",
         "create_workflow_entity_directory_func",
@@ -109,7 +109,7 @@ BHOM_TOOL_SPECS = (
     ),
     ToolSpec(
         "run_revit_connector",
-        "Run download_takeoff for the Revit connector and store the takeoff result.",
+        "Run lca_data_view followed by download_takeoff and store the Revit takeoff result.",
         "agent.tools.viktor_tools.bhom.run_apps",
         "RunNodeArgs",
         "run_revit_connector_func",
@@ -117,7 +117,7 @@ BHOM_TOOL_SPECS = (
     ),
     ToolSpec(
         "handoff_revit_connector_to_material_template_mapping",
-        "Patch the stored Revit takeoff and floor area into material mapping and verify readback.",
+        "Replace the material mapping table from the stored Revit takeoff and verify readback.",
         "agent.tools.viktor_tools.bhom.handoffs",
         "HandoffRevitToMappingArgs",
         "handoff_revit_connector_to_material_template_mapping_func",
@@ -132,7 +132,7 @@ BHOM_TOOL_SPECS = (
     ),
     ToolSpec(
         "handoff_material_template_mapping_to_lca_analysis",
-        "Patch the approved material template and takeoff into LCA and verify readback.",
+        "Use stored takeoff, approved templates, saved floor area, and generated project defaults to prepare LCA.",
         "agent.tools.viktor_tools.bhom.handoffs",
         "HandoffMappingToLcaArgs",
         "handoff_material_template_mapping_to_lca_analysis_func",

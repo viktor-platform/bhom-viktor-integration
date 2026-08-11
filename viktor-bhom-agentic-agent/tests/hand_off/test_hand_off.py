@@ -1,6 +1,7 @@
 import asyncio
 import json
 from collections.abc import Callable, Coroutine
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 
@@ -34,6 +35,9 @@ def _directory() -> SimpleNamespace:
                 entity_mode="existing_entity",
                 created_for_run=False,
                 saved_params_are_shared=True,
+                method_name="download_takeoff",
+                method_type="download-button",
+                pre_run_method_name="lca_data_view",
                 storage_key=REVIT_STORAGE_KEY,
                 result_key="download",
             ),
@@ -45,6 +49,7 @@ def _directory() -> SimpleNamespace:
                 entity_mode="existing_entity",
                 created_for_run=False,
                 saved_params_are_shared=True,
+                method_name="workflow_handoff_view",
                 storage_key=MAPPING_STORAGE_KEY,
                 result_key="data",
             ),
@@ -56,6 +61,8 @@ def _directory() -> SimpleNamespace:
                 entity_mode="existing_entity",
                 created_for_run=False,
                 saved_params_are_shared=True,
+                method_name="run_analysis",
+                method_type="download-button",
                 storage_key="bhom_lca_result",
                 result_key="download",
             ),
@@ -80,6 +87,7 @@ def test_registry_has_fixed_bhom_node_order_and_ids() -> None:
         ("material_template_mapping", 3425, 14969),
         ("lca_analysis", 3423, 14973),
     ]
+    assert all(item.entity_mode == "clone_sibling" for item in templates)
 
 
 def test_agent_exposes_workflow_node_storage_run_and_handoff_tools() -> None:
@@ -97,6 +105,67 @@ def test_agent_exposes_workflow_node_storage_run_and_handoff_tools() -> None:
         "handoff_material_template_mapping_to_lca_analysis",
         "run_lca_analysis",
     } <= tool_names
+
+
+def test_system_prompt_starts_revit_automatically() -> None:
+    prompt = (Path(__file__).parents[2] / "agent" / "system_prompt.xml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Do not stop after creating the workflow directory" in prompt
+    assert "Immediately after workflow creation, call run_revit_connector" in prompt
+    assert "Do not ask the user to prepare Revit first" in prompt
+    assert "Never ask the user for project_id or project_name" in prompt
+    assert "Do not ask for it before mapping approval" in prompt
+
+
+def test_revit_run_uses_download_takeoff_before_any_handoff(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    async def fake_run_node(**kwargs: Any) -> str:
+        calls.append(kwargs)
+        return '{"status":"completed"}'
+
+    monkeypatch.setattr(run_apps, "_run_node", fake_run_node)
+
+    result = asyncio.run(run_apps.run_revit_connector_func(cast(Any, None), "{}"))
+
+    assert json.loads(result)["status"] == "completed"
+    assert calls[0]["tool_name"] == "run_revit_connector"
+    assert calls[0]["node_id"] == "revit_connector"
+
+
+def test_revit_run_uses_lca_view_before_download_button() -> None:
+    class RestClient:
+        calls: list[tuple[str, str | None]]
+
+        def __init__(self) -> None:
+            self.calls = []
+
+        def run_entity_method(self, **kwargs: Any) -> dict[str, Any]:
+            self.calls.append((kwargs["method_name"], kwargs.get("method_type")))
+            if kwargs["method_name"] == "lca_data_view":
+                return {"data": {}}
+            return {"download": {"url": "https://example.invalid/takeoff.json"}}
+
+    service = FakeNodeService(_directory(), {"revit_connector": {}})
+    client = RestClient()
+    service.client = client
+
+    _, backend = run_apps._execute(
+        service=cast(Any, service),
+        target=service.resolve_entity("revit_connector"),
+        params={},
+        timeout=30,
+    )
+
+    assert backend == "rest_job"
+    assert client.calls == [
+        ("lca_data_view", None),
+        ("download_takeoff", "download-button"),
+    ]
 
 
 def test_revit_stored_takeoff_is_handed_to_mapping(
