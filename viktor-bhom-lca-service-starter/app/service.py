@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -7,6 +8,7 @@ from .contracts import (
     ContractError,
     build_request,
     parse_json,
+    portable_bhom_takeoff,
     validate_normalized_result,
 )
 from .file_io import FileReadError, read_uploaded_or_inline
@@ -42,6 +44,11 @@ def resolve_input_text(params: Any) -> tuple[str, str]:
 
 def run_service(params: Any, *, timeout_seconds: int = 600) -> ServiceResult:
     takeoff_json, template_json = resolve_input_text(params)
+    takeoff_json = json.dumps(
+        portable_bhom_takeoff(parse_json(takeoff_json, label="takeoff JSON")),
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
 
     request = build_request(
         takeoff_json=takeoff_json,

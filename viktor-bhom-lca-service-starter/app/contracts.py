@@ -15,6 +15,17 @@ MATERIAL_TYPE = "BH.oM.Physical.Materials.Material"
 ALLOWED_METRICS = frozenset({"ClimateChangeTotal"})
 ALLOWED_MODULES = frozenset({"A1", "A2", "A3", "A1toA3"})
 COMPONENT_MODULES = frozenset({"A1", "A2", "A3"})
+TAKEOFF_QUANTITY_FIELDS = (
+    "Volume",
+    "Mass",
+    "Area",
+    "Length",
+    "NumberItem",
+    "ElectricCurrent",
+    "Energy",
+    "Power",
+    "VolumetricFlowRate",
+)
 
 
 class ContractError(ValueError):
@@ -130,6 +141,32 @@ def validate_bhom_takeoff(value: Any) -> dict[str, Any]:
     return value
 
 
+def portable_bhom_takeoff(value: Any) -> dict[str, Any]:
+    takeoff = validate_bhom_takeoff(value)
+    items = []
+    for item in takeoff["MaterialTakeoffItems"]:
+        material = item["Material"]
+        portable_item = {
+            "_t": "BH.oM.Physical.Materials.TakeoffItem",
+            "Material": {
+                "_t": MATERIAL_TYPE,
+                "Name": str(material.get("Name") or "").strip(),
+                "Density": float(material.get("Density") or 0.0),
+                "Properties": [],
+            },
+        }
+        portable_item.update(
+            {field: item.get(field, 0) or 0 for field in TAKEOFF_QUANTITY_FIELDS}
+        )
+        items.append(portable_item)
+
+    return {
+        "_t": TAKEOFF_TYPE,
+        "Name": str(takeoff.get("Name") or ""),
+        "MaterialTakeoffItems": items,
+    }
+
+
 def validate_bhom_templates(value: Any) -> list[dict[str, Any]]:
     if not isinstance(value, list) or not value:
         raise ContractError("Template materials must be a nonempty JSON array.")
@@ -186,7 +223,7 @@ def build_request(
     modules: list[str] | tuple[str, ...],
     prioritise_template_materials: bool,
 ) -> AnalysisRequest:
-    takeoff = validate_bhom_takeoff(parse_json(takeoff_json, label="takeoff JSON"))
+    takeoff = portable_bhom_takeoff(parse_json(takeoff_json, label="takeoff JSON"))
     templates = validate_bhom_templates(
         parse_json(template_materials_json, label="template-material JSON")
     )

@@ -9,6 +9,7 @@ from app.contracts import (
     AnalysisRequest,
     ContractError,
     build_request,
+    portable_bhom_takeoff,
     validate_bhom_takeoff,
     validate_module_selection,
     validate_normalized_result,
@@ -72,6 +73,26 @@ def test_rejects_wrong_takeoff_type() -> None:
     value["_t"] = "BH.oM.Physical.Materials.Material"
     with pytest.raises(ContractError, match="takeoff _t"):
         validate_bhom_takeoff(value)
+
+
+def test_portable_takeoff_removes_unavailable_revit_types() -> None:
+    value = json.loads(sample_text("takeoff.bhom.json"))
+    material = value["MaterialTakeoffItems"][0]["Material"]
+    material["BHoM_Guid"] = "5f1941d7-b47b-4566-94a7-f13fafa3c0a4"
+    material["Fragments"] = [{"_t": "BH.oM.Adapters.Revit.Parameters.RevitIdentifiers"}]
+    material["Properties"] = [
+        {"_t": "BH.oM.Environment.MaterialFragments.SolidMaterial"}
+    ]
+
+    portable = portable_bhom_takeoff(value)
+
+    portable_material = portable["MaterialTakeoffItems"][0]["Material"]
+    assert portable_material == {
+        "_t": "BH.oM.Physical.Materials.Material",
+        "Name": "Concrete C30/37",
+        "Density": 2400.0,
+        "Properties": [],
+    }
 
 
 def test_normalized_sample_meets_service_schema() -> None:
