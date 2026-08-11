@@ -74,18 +74,27 @@ def _validate_takeoff(value: Any) -> str:
     return text
 
 
-def _validate_templates(value: Any) -> str:
+def _validate_templates(value: Any, *, expected_count: int | None = None) -> str:
     text = _json_text(value, field_name="template_materials_json")
     payload = json.loads(text)
     if not isinstance(payload, list) or not payload:
         raise ValueError(
             "template_materials_json must contain a non-empty Material array."
         )
-    if any(
-        not isinstance(item, dict) or item.get("_t") != MATERIAL_TYPE
-        for item in payload
-    ):
-        raise ValueError("Every approved template must be a BHoM Material.")
+    for item in payload:
+        if not isinstance(item, dict) or item.get("_t") != MATERIAL_TYPE:
+            raise ValueError("Every approved template must be a BHoM Material.")
+        if not str(item.get("Name") or "").strip():
+            raise ValueError("Every approved BHoM Material must have a Name.")
+        properties = item.get("Properties")
+        if not isinstance(properties, list) or not properties:
+            raise ValueError(
+                "Every approved BHoM Material must contain a selected EPD in Properties."
+            )
+    if expected_count is not None and len(payload) != expected_count:
+        raise ValueError(
+            "The approved BHoM Material count must match the material inventory."
+        )
     return text
 
 
@@ -324,7 +333,14 @@ async def handoff_material_template_mapping_to_lca_analysis_func(
             payload.takeoff_json,
             stored_takeoff if stored_takeoff is not None else source,
         )
-        template_materials_json = _validate_templates(template_value)
+        inventory = _value(source, "material_inventory")
+        expected_template_count = (
+            len(inventory) if isinstance(inventory, list) else None
+        )
+        template_materials_json = _validate_templates(
+            template_value,
+            expected_count=expected_template_count,
+        )
         project_name = (
             payload.project_name or _value(source, "project_name") or "BHoM LCA Project"
         ).strip()

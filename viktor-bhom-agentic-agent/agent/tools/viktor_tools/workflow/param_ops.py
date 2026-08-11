@@ -154,9 +154,15 @@ SET_PARAMS_METHODS: dict[WorkflowNodeId, dict[str, dict[str, Any]]] = {
             "method_name": "search_bhom_database",
             "node_type": "set-params-button",
             "label": "Search installed BHoM datasets",
-        }
+        },
+        "finalize_mapping": {
+            "method_name": "finalize_mapping",
+            "node_type": "set-params-button",
+            "label": "Finalize approved mappings",
+        },
     }
 }
+SET_PARAMS_MAX_ATTEMPTS = 3
 
 
 def _matches_patch(actual: Any, expected: Any) -> bool:
@@ -394,19 +400,29 @@ class WorkflowNodeParamService:
         method = _validate_set_params_method(payload.node_id, payload.method_name)
         target = self.entity_service.resolve_entity(payload.node_id)
         current_params = self.entity_service.read_last_saved_params(target)
-        result = _run_method(
-            entity_service=self.entity_service,
-            compute_client=self.compute_client,
-            target=target,
-            method_name=payload.method_name,
-            method_type=str(method.get("node_type") or "") or None,
-            params=_set_params_method_inputs(
-                payload.node_id,
-                payload.method_name,
-                current_params,
-            ),
-            timeout=payload.timeout,
+        method_inputs = _set_params_method_inputs(
+            payload.node_id,
+            payload.method_name,
+            current_params,
         )
+        result: dict[str, Any] | None = None
+        for attempt in range(SET_PARAMS_MAX_ATTEMPTS):
+            try:
+                result = _run_method(
+                    entity_service=self.entity_service,
+                    compute_client=self.compute_client,
+                    target=target,
+                    method_name=payload.method_name,
+                    method_type=str(method.get("node_type") or "") or None,
+                    params=method_inputs,
+                    timeout=payload.timeout,
+                )
+                break
+            except RuntimeError:
+                if attempt == SET_PARAMS_MAX_ATTEMPTS - 1:
+                    raise
+        if result is None:
+            raise RuntimeError("Set-params method returned no result.")
         patch = _extract_set_params_patch(result)
         next_params = deep_merge(current_params, patch) if payload.merge else patch
         self.entity_service.set_last_saved_params(

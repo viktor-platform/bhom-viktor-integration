@@ -9,6 +9,7 @@ import pytest
 
 from agent.tools.registry import get_tools
 from agent.tools.viktor_tools.bhom import handoffs, run_apps
+from agent.tools.viktor_tools.sdk_compute import ViktorSdkComputeClient
 from agent.tools.viktor_tools.workflow import result_ops
 from agent.tools.viktor_tools.workflow.entity_ops import WorkflowAppRegistry
 from agent.tools.viktor_tools.workflow.param_ops import (
@@ -120,6 +121,8 @@ def test_system_prompt_starts_revit_automatically() -> None:
     assert "Never ask the user to download, upload, or paste" in prompt
     assert "do not call get_result_from_node first" in prompt
     assert "Always end every turn with a direct user-facing response" in prompt
+    assert "method_name finalize_mapping" in prompt
+    assert "read back template_materials_json" in prompt
 
 
 def test_revit_run_uses_download_takeoff_before_any_handoff(
@@ -296,6 +299,48 @@ def test_mapping_to_lca_requires_saved_approved_template(
     assert service.params_by_node["lca_analysis"] == {}
 
 
+def test_mapping_to_lca_rejects_inventory_rows_as_templates(
+    monkeypatch: pytest.MonkeyPatch,
+    sample_takeoff: dict[str, Any],
+) -> None:
+    inventory = [
+        {
+            "material_name": "Concrete C30/37",
+            "search_query": "concrete",
+            "volume_m3": 12.5,
+            "density_kg_m3": 2400.0,
+        }
+    ]
+    service = FakeNodeService(
+        _directory(),
+        {
+            "revit_connector": {},
+            "material_template_mapping": {
+                "material_inventory": inventory,
+                "template_materials_json": json.dumps(inventory),
+                "gross_floor_area_m2": 500.0,
+            },
+            "lca_analysis": {},
+        },
+    )
+    storage = {REVIT_STORAGE_KEY: {"takeoff_json": json.dumps(sample_takeoff)}}
+    monkeypatch.setattr(handoffs, "get_workflow_entity_service", lambda: service)
+    monkeypatch.setattr(
+        handoffs,
+        "try_read_json_from_storage",
+        lambda key: storage.get(key),
+    )
+
+    result = asyncio.run(
+        _handoff("handoff_material_template_mapping_to_lca_analysis_func")(None, "{}")
+    )
+    response = json.loads(result)
+
+    assert response["status"] == "validation_error"
+    assert "Every approved template must be a BHoM Material" in response["details"]
+    assert service.params_by_node["lca_analysis"] == {}
+
+
 def test_set_and_get_node_params_deep_merge_with_readback() -> None:
     service = FakeNodeService(
         _directory(),
@@ -374,6 +419,175 @@ def test_worker_search_uses_set_params_button_method_type() -> None:
     assert client.method_type == "set-params-button"
     assert client.input_keys == ["dataset_scope", "material_inventory"]
     assert result["readback_verified"] is True
+
+
+def test_worker_search_retries_one_transient_sdk_failure() -> None:
+    class ComputeClient:
+        calls = 0
+
+        def compute_method(self, **kwargs: Any) -> dict[str, Any]:
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("temporary worker failure")
+            return {"set_params": {"lookup_results_json": '{"status":"completed"}'}}
+
+    service = FakeNodeService(
+        _directory(),
+        {
+            "revit_connector": {},
+            "material_template_mapping": {
+                "dataset_scope": "All installed LCA datasets",
+                "material_inventory": [],
+            },
+            "lca_analysis": {},
+        },
+    )
+    target = service.resolve_entity("material_template_mapping")
+    target.entity_mode = "clone_sibling"
+    target.created_for_run = True
+    compute = ComputeClient()
+
+    result = WorkflowNodeParamService(
+        entity_service=service,
+        compute_client=cast(Any, compute),
+    ).apply_set_params_method(
+        ApplySetParamsMethodInNodeArgs(
+            node_id="material_template_mapping",
+            method_name="search_bhom_database",
+            confirm=True,
+        )
+    )
+
+    assert compute.calls == 2
+    assert result["readback_verified"] is True
+
+
+def test_finalize_mapping_uses_saved_mapping_params() -> None:
+    class ComputeClient:
+        def __init__(self) -> None:
+            self.params: dict[str, Any] = {}
+
+        def compute_method(self, **kwargs: Any) -> dict[str, Any]:
+            self.params = kwargs["params"]
+            return {
+                "set_params": {
+                    "template_materials_json": json.dumps(
+                        [
+                            {
+                                "_t": "BH.oM.Physical.Materials.Material",
+                                "Name": "Steel",
+                                "Properties": [{"_t": "EPD"}],
+                            }
+                        ]
+                    )
+                }
+            }
+
+    saved = {
+        "dataset_scope": "All installed LCA datasets",
+        "material_inventory": [{"material_name": "Steel"}],
+        "lookup_results_json": '{"status":"completed"}',
+        "mapping_state_json": '{"schema_version":"1.0","mappings":{"Steel":"epd"}}',
+        "template_materials_json": "[]",
+        "gross_floor_area_m2": 1000,
+    }
+    service = FakeNodeService(
+        _directory(),
+        {
+            "revit_connector": {},
+            "material_template_mapping": saved,
+            "lca_analysis": {},
+        },
+    )
+    target = service.resolve_entity("material_template_mapping")
+    target.entity_mode = "clone_sibling"
+    target.created_for_run = True
+    compute = ComputeClient()
+
+    result = WorkflowNodeParamService(
+        entity_service=service,
+        compute_client=cast(Any, compute),
+    ).apply_set_params_method(
+        ApplySetParamsMethodInNodeArgs(
+            node_id="material_template_mapping",
+            method_name="finalize_mapping",
+            confirm=True,
+        )
+    )
+
+    assert compute.params == saved
+    templates = json.loads(
+        service.params_by_node["material_template_mapping"]["template_materials_json"]
+    )
+    assert templates[0]["Name"] == "Steel"
+    assert result["readback_verified"] is True
+
+
+def test_sdk_compute_normalizes_remote_exceptions() -> None:
+    class Entity:
+        def compute(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+            raise TimeoutError
+
+    class Workspace:
+        def get_entity(self, entity_id: int) -> Entity:
+            return Entity()
+
+    class Api:
+        def get_workspace(self, workspace_id: int) -> Workspace:
+            return Workspace()
+
+    client = object.__new__(ViktorSdkComputeClient)
+    client.api = cast(Any, Api())
+
+    with pytest.raises(
+        RuntimeError,
+        match="VIKTOR SDK method 'search_bhom_database' failed: TimeoutError",
+    ):
+        client.compute_method(
+            workspace_id=3425,
+            entity_id=15440,
+            method_name="search_bhom_database",
+            params={},
+        )
+
+
+def test_worker_search_reports_error_after_three_failures() -> None:
+    class ComputeClient:
+        calls = 0
+
+        def compute_method(self, **kwargs: Any) -> dict[str, Any]:
+            self.calls += 1
+            raise RuntimeError("worker unavailable")
+
+    service = FakeNodeService(
+        _directory(),
+        {
+            "revit_connector": {},
+            "material_template_mapping": {
+                "dataset_scope": "All installed LCA datasets",
+                "material_inventory": [],
+            },
+            "lca_analysis": {},
+        },
+    )
+    target = service.resolve_entity("material_template_mapping")
+    target.entity_mode = "clone_sibling"
+    target.created_for_run = True
+    compute = ComputeClient()
+
+    with pytest.raises(RuntimeError, match="worker unavailable"):
+        WorkflowNodeParamService(
+            entity_service=service,
+            compute_client=cast(Any, compute),
+        ).apply_set_params_method(
+            ApplySetParamsMethodInNodeArgs(
+                node_id="material_template_mapping",
+                method_name="search_bhom_database",
+                confirm=True,
+            )
+        )
+
+    assert compute.calls == 3
 
 
 def test_get_result_from_node_reads_workflow_storage(

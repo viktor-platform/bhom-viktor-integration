@@ -839,6 +839,18 @@ class Controller(vkt.Controller):
             }
         )
 
+    def finalize_mapping(self, params: Any, **kwargs: Any):
+        _, _, _, _, templates = self._template_context(params)
+        return vkt.SetParamsResult(
+            {
+                "template_materials_json": json.dumps(
+                    templates,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                )
+            }
+        )
+
     @vkt.WebView(
         "Mapping",
         duration_guess=1,

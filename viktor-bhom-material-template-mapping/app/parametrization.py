@@ -93,6 +93,14 @@ class Parametrization(vkt.Parametrization):
             "populates the Mapping view with typed EPDs."
         ),
     )
+    finalize_mapping = vkt.SetParamsButton(
+        "Finalize approved mappings",
+        method="finalize_mapping",
+        description=(
+            "Builds and saves the canonical BHoM Material array from the approved "
+            "mapping selections for the LCA handoff."
+        ),
+    )
 
     mapping_help = vkt.Text(
         "## Results and Excel export\n"

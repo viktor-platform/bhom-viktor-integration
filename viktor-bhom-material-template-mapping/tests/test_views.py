@@ -437,6 +437,28 @@ class TestViews(unittest.TestCase):
         )
         self.assertEqual(result._data["template_materials_json"], "[]")
 
+    def test_finalize_mapping_saves_canonical_bhom_materials(self):
+        result = Controller().finalize_mapping(params=params(complete_mapping_state()))
+
+        templates = json.loads(result._data["template_materials_json"])
+        self.assertEqual(len(templates), 2)
+        self.assertEqual(
+            [template["Name"] for template in templates],
+            ["Concrete C30/37", "Structural Steel"],
+        )
+        self.assertTrue(
+            all(
+                template["_t"] == "BH.oM.Physical.Materials.Material"
+                and isinstance(template["Properties"], list)
+                and template["Properties"]
+                for template in templates
+            )
+        )
+
+    def test_finalize_mapping_requires_every_material_to_be_mapped(self):
+        with self.assertRaisesRegex(vkt.UserError, "Still unmapped"):
+            Controller().finalize_mapping(params=params())
+
     def test_excel_export_opens_with_expected_sheets_and_typed_values(self):
         result = Controller().download_excel(params=params(complete_mapping_state()))
 

@@ -67,7 +67,13 @@ class ViktorSdkComputeClient:
     ) -> dict[str, Any]:
         workspace = self.api.get_workspace(workspace_id)
         entity = workspace.get_entity(entity_id)
-        result = entity.compute(method_name, params=params, timeout=timeout)
+        try:
+            result = entity.compute(method_name, params=params, timeout=timeout)
+        except Exception as exc:
+            detail = str(exc).strip() or type(exc).__name__
+            raise RuntimeError(
+                f"VIKTOR SDK method '{method_name}' failed: {detail}"
+            ) from exc
         if not isinstance(result, dict):
             raise TypeError(
                 f"VIKTOR SDK compute did not return a JSON object: {result}"
