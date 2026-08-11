@@ -27,7 +27,7 @@ from agent.types import AgentContext
 
 TAKEOFF_TYPE = "BH.oM.Physical.Materials.GeneralMaterialTakeoff"
 MATERIAL_TYPE = "BH.oM.Physical.Materials.Material"
-DEFAULT_MODULES = ["A1", "A2", "A3"]
+DEFAULT_MODULES = ["A1toA3"]
 
 
 class HandoffRevitToMappingArgs(BaseModel):

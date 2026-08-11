@@ -71,10 +71,6 @@ class WorkflowAgentRuntime:
             return str(fn.name)
         return "tool"
 
-    @staticmethod
-    def _normalize_stream_text(text: str) -> str:
-        return " ".join(text.split()).strip()
-
     def _get_agent(self) -> Agent[AgentContext]:
         with self._state_lock:
             if self._agent is None:
@@ -122,7 +118,8 @@ class WorkflowAgentRuntime:
     ) -> None:
         call_id_to_name: dict[str, str] = {}
         pending_assistant_message: str | None = None
-        streamed_text = ""
+        last_tool_display_name: str | None = None
+        final_message_after_tool = False
         try:
             result = Runner.run_streamed(
                 self._get_agent(),
@@ -136,12 +133,9 @@ class WorkflowAgentRuntime:
                     event.data,
                     ResponseTextDeltaEvent,
                 ):
-                    if event.data.delta:
-                        streamed_text += event.data.delta
-                        output_queue.put(event.data.delta)
                     continue
 
-                if not show_tool_progress or event.type != "run_item_stream_event":
+                if event.type != "run_item_stream_event":
                     continue
 
                 item = event.item
@@ -151,32 +145,30 @@ class WorkflowAgentRuntime:
                     item, MessageOutputItem
                 ):
                     text = ItemHelpers.text_message_output(item).strip()
-                    if text and self._normalize_stream_text(
-                        text
-                    ) != self._normalize_stream_text(streamed_text):
-                        pending_assistant_message = text
-                    else:
-                        pending_assistant_message = None
-                    streamed_text = ""
+                    pending_assistant_message = text or None
+                    if last_tool_display_name is not None and text:
+                        final_message_after_tool = True
                     continue
 
                 if event.name == "tool_called":
-                    if pending_assistant_message:
-                        output_queue.put(f"\n\n{pending_assistant_message}\n\n")
-                        pending_assistant_message = None
+                    pending_assistant_message = None
+                    final_message_after_tool = False
                     call_id = self._extract_call_id(raw)
                     tool_name = self._extract_tool_name(raw)
                     if call_id:
                         call_id_to_name[call_id] = tool_name
                     display_name = TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
-                    output_queue.put(f"\n\n> Running **{display_name}**\n")
+                    last_tool_display_name = display_name
+                    if show_tool_progress:
+                        output_queue.put(f"\n\n> Running **{display_name}**\n")
                     continue
 
                 if event.name == "tool_output":
                     call_id = self._extract_call_id(raw)
                     tool_name = call_id_to_name.get(call_id or "", "tool")
                     display_name = TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
-                    output_queue.put(f"\n> Done **{display_name}**\n\n")
+                    if show_tool_progress:
+                        output_queue.put(f"\n> Done **{display_name}**\n\n")
 
         except MaxTurnsExceeded:
             output_queue.put(
@@ -188,6 +180,11 @@ class WorkflowAgentRuntime:
         finally:
             if pending_assistant_message:
                 output_queue.put(f"\n\n{pending_assistant_message}\n\n")
+            elif last_tool_display_name is not None and not final_message_after_tool:
+                output_queue.put(
+                    "\n\nThe workflow tool calls finished, but the agent did not "
+                    "produce a verified final summary. Please retry the last request.\n"
+                )
             output_queue.put(sentinel)
 
     @staticmethod

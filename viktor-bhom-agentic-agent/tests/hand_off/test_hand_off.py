@@ -271,7 +271,7 @@ def test_approved_mapping_is_handed_to_lca(
         "project_id": "sample-office",
         "project_name": "Sample Office",
         "gross_floor_area_m2": 500.0,
-        "modules": ["A1", "A2", "A3"],
+        "modules": ["A1toA3"],
     }
 
 
@@ -355,7 +355,7 @@ def test_set_and_get_node_params_deep_merge_with_readback() -> None:
     written = params.set_params(
         SetParamsInNodeArgs(
             node_id="lca_analysis",
-            params={"modules": ["A1", "A2", "A3"]},
+            params={"modules": ["A1toA3"]},
         )
     )
     read = params.get_params(GetParamsInNodeArgs(node_id="lca_analysis"))
@@ -363,7 +363,7 @@ def test_set_and_get_node_params_deep_merge_with_readback() -> None:
     assert written["readback_verified"] is True
     assert read["params"] == {
         "chart_type": "Stacked bar",
-        "modules": ["A1", "A2", "A3"],
+        "modules": ["A1toA3"],
     }
 
 
