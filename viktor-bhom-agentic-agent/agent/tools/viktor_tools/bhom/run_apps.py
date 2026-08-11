@@ -126,23 +126,50 @@ def _execute(
 
 
 def _download_json(selected: Any, client: ViktorRestEntityClient | None) -> Any:
-    if not isinstance(selected, dict):
+    if isinstance(selected, dict):
+        url = selected.get("url")
+        if isinstance(url, str) and url:
+            headers = {}
+            if client and urlparse(url).netloc == urlparse(client.api_base).netloc:
+                headers = client.auth_headers
+            response = requests.get(url, headers=headers, timeout=(5.0, 60.0))
+            response.raise_for_status()
+            return _parse_download_content(response.content)
+        for key in ("file", "file_content", "content"):
+            if key in selected:
+                return _download_json(selected[key], client)
         return selected
-    url = selected.get("url")
-    if not isinstance(url, str) or not url:
-        return selected
-    headers = {}
-    if client and urlparse(url).netloc == urlparse(client.api_base).netloc:
-        headers = client.auth_headers
-    response = requests.get(url, headers=headers, timeout=(5.0, 60.0))
-    response.raise_for_status()
+
+    file_value = getattr(selected, "file", None)
+    if file_value is not None and file_value is not selected:
+        return _download_json(file_value, client)
+
+    for accessor_name in ("getvalue_binary", "getvalue"):
+        accessor = getattr(selected, accessor_name, None)
+        if callable(accessor):
+            return _parse_download_content(accessor())
+
+    open_binary = getattr(selected, "open_binary", None)
+    if callable(open_binary):
+        with open_binary() as stream:
+            return _parse_download_content(stream.read())
+
+    return _parse_download_content(selected)
+
+
+def _parse_download_content(content: Any) -> Any:
+    if isinstance(content, (dict, list)):
+        return content
+    if isinstance(content, (bytes, bytearray)):
+        content = bytes(content).decode("utf-8")
+    if not isinstance(content, str):
+        raise TypeError(
+            f"Download result is not readable JSON content: {type(content).__name__}."
+        )
     try:
-        return response.json()
-    except requests.JSONDecodeError:
-        try:
-            return json.loads(response.text)
-        except json.JSONDecodeError:
-            return selected
+        return json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise ValueError("Downloaded file does not contain valid JSON.") from exc
 
 
 def _summary(value: Any) -> dict[str, Any]:

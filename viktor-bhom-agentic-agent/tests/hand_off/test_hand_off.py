@@ -117,6 +117,9 @@ def test_system_prompt_starts_revit_automatically() -> None:
     assert "Do not ask the user to prepare Revit first" in prompt
     assert "Never ask the user for project_id or project_name" in prompt
     assert "Do not ask for it before mapping approval" in prompt
+    assert "Never ask the user to download, upload, or paste" in prompt
+    assert "do not call get_result_from_node first" in prompt
+    assert "Always end every turn with a direct user-facing response" in prompt
 
 
 def test_revit_run_uses_download_takeoff_before_any_handoff(
@@ -412,6 +415,7 @@ def test_presigned_download_does_not_receive_viktor_bearer_header(
 
     class Response:
         text = '{"status":"ok"}'
+        content = text.encode("utf-8")
 
         def raise_for_status(self) -> None:
             return None
@@ -446,3 +450,29 @@ def test_presigned_download_does_not_receive_viktor_bearer_header(
 
     assert result == {"status": "ok"}
     assert observed_headers == {}
+
+
+def test_sdk_download_file_is_parsed_as_json(
+    sample_takeoff: dict[str, Any],
+) -> None:
+    class SdkFile:
+        def getvalue_binary(self) -> bytes:
+            return json.dumps(sample_takeoff).encode("utf-8")
+
+    result = run_apps._download_json(SdkFile(), None)
+
+    assert result == sample_takeoff
+
+
+def test_sdk_file_resource_is_parsed_as_json(
+    sample_takeoff: dict[str, Any],
+) -> None:
+    class SdkFile:
+        def getvalue_binary(self) -> bytes:
+            return json.dumps(sample_takeoff).encode("utf-8")
+
+    resource = SimpleNamespace(file=SdkFile())
+
+    result = run_apps._download_json(resource, None)
+
+    assert result == sample_takeoff

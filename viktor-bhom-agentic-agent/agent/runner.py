@@ -1,4 +1,5 @@
 import asyncio
+import json
 import queue
 import threading
 from collections.abc import Callable, Iterator
@@ -70,6 +71,39 @@ class WorkflowAgentRuntime:
         if fn is not None and getattr(fn, "name", None):
             return str(fn.name)
         return "tool"
+
+    @staticmethod
+    def _extract_tool_output(raw: Any) -> Any:
+        if isinstance(raw, dict):
+            return raw.get("output") or raw.get("result")
+        return getattr(raw, "output", None) or getattr(raw, "result", None)
+
+    @staticmethod
+    def _tool_output_summary(raw: Any) -> str:
+        output = WorkflowAgentRuntime._extract_tool_output(raw)
+        if isinstance(output, str):
+            try:
+                output = json.loads(output)
+            except json.JSONDecodeError:
+                return WorkflowAgentRuntime._normalize_stream_text(output)[:300]
+        if not isinstance(output, dict):
+            return ""
+
+        parts = []
+        for key in ("status", "message", "run_name", "node_id", "entity_id"):
+            value = output.get(key)
+            if value not in (None, ""):
+                parts.append(f"{key}={value}")
+        summary = output.get("summary")
+        if isinstance(summary, dict):
+            parts.append(
+                "result="
+                + ", ".join(f"{key}:{value}" for key, value in summary.items())
+            )
+        url = output.get("url")
+        if isinstance(url, str) and url:
+            parts.append(f"url={url}")
+        return "; ".join(parts)[:500]
 
     @staticmethod
     def _normalize_stream_text(text: str) -> str:
@@ -176,7 +210,9 @@ class WorkflowAgentRuntime:
                     call_id = self._extract_call_id(raw)
                     tool_name = call_id_to_name.get(call_id or "", "tool")
                     display_name = TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
-                    output_queue.put(f"\n> Done **{display_name}**\n\n")
+                    summary = self._tool_output_summary(raw)
+                    suffix = f" — {summary}" if summary else ""
+                    output_queue.put(f"\n> Done **{display_name}**{suffix}\n\n")
 
         except MaxTurnsExceeded:
             output_queue.put(
